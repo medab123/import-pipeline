@@ -8,6 +8,7 @@ use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\Stepper\CreateStepViewModel;
 use Elaitech\Import\Models\ImportPipeline;
+use Elaitech\Import\Services\Pipeline\Services\TargetFieldsService;
 use Illuminate\Support\Collection;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\ViewModels\ViewModel;
@@ -61,6 +62,16 @@ final class ImagesPrepareConfigStepViewModel extends ViewModel
         return $this->imagesPrepareConfig->get('download_mode', 'all');
     }
 
+    public function imagesKey(): string
+    {
+        return $this->imagesPrepareConfig->get('images_key', 'images');
+    }
+
+    public function targetFields(): array
+    {
+        return app(TargetFieldsService::class)->getTargetFields();
+    }
+
     private function getImagesPrepareConfig(): Collection
     {
         $config = $this->pipeline->getImagesPrepareConfig();
@@ -68,6 +79,7 @@ final class ImagesPrepareConfigStepViewModel extends ViewModel
             return collect([
                 'image_indexes_to_skip' => [],
                 'image_separator' => ',',
+                'images_key' => '',
                 'active' => false,
                 'download_mode' => 'all',
             ]);

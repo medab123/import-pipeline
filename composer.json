@@ -8,7 +8,10 @@
     "repositories": [
         {
             "type": "path",
-            "url": "./packages/import"
+            "url": "./packages/import",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require": {

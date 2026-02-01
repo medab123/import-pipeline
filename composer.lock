@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "05c565e262f293e5c917633db52ed51f",
+    "content-hash": "aa01d032df2a95d17617373599b82f80",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -663,11 +663,11 @@
         },
         {
             "name": "elaitech/import",
-            "version": "dev-main",
+            "version": "dev-master",
             "dist": {
                 "type": "path",
                 "url": "./packages/import",
-                "reference": "0cb5a3aecc81ad9a18124e8a51eb3654758a06b8"
+                "reference": "353c70a04dea150e7af26c16b639c113e496ebba"
             },
             "require": {
                 "illuminate/console": "^12.0",
@@ -720,6 +720,7 @@
             ],
             "description": "Elaitech Import Package - A comprehensive import workflow system for Laravel",
             "transport-options": {
+                "symlink": true,
                 "relative": true
             }
         },
@@ -10200,5 +10201,5 @@
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import PipelineStepLayout from '../Partials/PipelineStepLayout.vue'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import type { ImagesPrepareConfigStepViewModel } from '@/types/generated'
+import SearchableSelect from '@/components/SearchableSelect.vue'
 
 const props = defineProps<ImagesPrepareConfigStepViewModel>()
 
@@ -21,6 +23,7 @@ const emit = defineEmits<{
 const form = useForm({
   image_indexes_to_skip: props.imageIndexesToSkip || [],
   image_separator: props.imageSeparator || ',',
+  images_key: props.imagesKey ||'',
   active: props.active ?? false,
   download_mode: props.downloadMode || 'all',
 })
@@ -41,6 +44,11 @@ const addIndexToSkip = () => {
 const removeIndexToSkip = (index: number) => {
   form.image_indexes_to_skip.splice(index, 1)
 }
+
+// Computed property for target fields to ensure it's always an array
+const targetFields = computed(() => {
+  return props.targetFields || []
+})
 
 
 
@@ -160,6 +168,61 @@ const handleSaveAndNext = () => {
                     Choose which products should have their images downloaded
                   </FormDescription>
                   <FormMessage for="download_mode" />
+                </FormItem>
+              </FormField>
+            </CardContent>
+          </Card>
+
+          <!-- Target Field Configuration -->
+          <Card class="mb-6">
+            <CardHeader>
+              <CardTitle>Target Field</CardTitle>
+              <CardDescription>
+                Select the target field that contains the images data
+              </CardDescription>
+            </CardHeader>
+            <CardContent class="space-y-4">
+              <FormField name="images_key">
+                <FormItem>
+                  <FormLabel for="images_key">Images Field</FormLabel>
+                  <FormControl>
+                    <SearchableSelect
+                      :model-value="form.images_key"
+                      @update:model-value="(val) => form.images_key = val as string"
+                      :items="targetFields"
+                      value-key="field"
+                      display-key="label"
+                      :search-keys="['field', 'label', 'description', 'category']"
+                      placeholder="Select target field"
+                      search-placeholder="Search fields..."
+                      class="w-full"
+                    >
+                      <template #item="{ item }">
+                        <div class="flex flex-col gap-1 w-full">
+                          <div class="flex items-center gap-2 w-full">
+                            <span class="font-medium text-sm">{{ item.label || item.field }}</span>
+                            <span
+                              v-if="item.category"
+                              class="text-xs text-muted-foreground px-1.5 py-0.5 bg-muted rounded shrink-0"
+                            >
+                              {{ item.category }}
+                            </span>
+                          </div>
+                          <span
+                            v-if="item.description"
+                            class="text-muted-foreground text-xs line-clamp-1"
+                            :title="item.description"
+                          >
+                            {{ item.description }}
+                          </span>
+                        </div>
+                      </template>
+                    </SearchableSelect>
+                  </FormControl>
+                  <FormDescription>
+                    The target field name that contains the images data in the mapped product data
+                  </FormDescription>
+                  <FormMessage for="images_key" />
                 </FormItem>
               </FormField>
             </CardContent>

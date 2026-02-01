@@ -42,6 +42,7 @@ final class ImagesPrepareConfigStep extends AbstractImportPipelineStep
             'image_indexes_to_skip' => ['nullable', 'array'],
             'image_indexes_to_skip.*' => ['integer', 'min:0'],
             'image_separator' => ['nullable', 'string', 'max:10'],
+            'images_key' => ['nullable', 'string', 'max:255'],
             'active' => ['nullable', 'boolean'],
             'download_mode' => ['nullable', 'string', 'in:all,new_products_only,products_without_images'],
         ];

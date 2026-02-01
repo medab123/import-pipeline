@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard\Import;
 
 use Elaitech\Import\Enums\ImportPipelineStep;
-use App\Enums\PipelineStage;
 use App\Factories\ImportPipeline\ImportPipelineStepFactory;
 use App\Http\ViewModels\Dashboard\Import\Stepper\Steps\TestReaderViewModel;
+use Elaitech\Import\Enums\PipelineStage;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Core\Exceptions\ReaderException;
 use Elaitech\Import\Services\Pipeline\Contracts\ImportPipelineInterface;
@@ -20,7 +20,6 @@ final class TestReaderController extends AbstractTestController
 {
     public function __construct(
         private readonly ImportPipelineInterface $pipelineService,
-        private readonly PipelineTestDataService $testDataService,
         ImportPipelineStepFactory $stepFactory,
         LoggerInterface $logger,
     ) {
