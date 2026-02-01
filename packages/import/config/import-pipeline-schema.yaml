@@ -1,0 +1,247 @@
+# Import Pipeline Configuration Schema
+# This schema supports all available downloader and reader types
+
+pipeline:
+  # Download Configuration
+  download:
+    type: "http"  # http, https, ftp, sftp
+    url: "https://example.com/data.csv"
+    options:
+      # HTTP/HTTPS Options
+      headers:
+        Authorization: "Bearer token"
+        Accept: "application/json"
+        User-Agent: "MyApp/1.0"
+      timeout: 30
+      verify_ssl: true
+      method: "GET"  # GET, POST, PUT, PATCH, DELETE, HEAD
+      basic_auth: ["username", "password"]
+      query:
+        param1: "value1"
+        param2: "value2"
+      follow_redirects: true
+      
+      # FTP Options (when type is ftp)
+      username: "ftp_user"
+      password: "ftp_password"
+      ssl: false
+      passive: true
+      root: "/"
+      port: 21
+      
+      # SFTP Options (when type is sftp)
+      username: "sftp_user"
+      password: "sftp_password"
+      private_key: "/path/to/private/key"
+      passphrase: "key_passphrase"
+      use_agent: false
+      host_fingerprint: "ssh-rsa AAAAB3NzaC1yc2E..."
+      root: "/"
+      port: 22
+
+  # Reader Configuration
+  read:
+    type: "csv"  # csv, json, xml, yaml, text
+    options:
+      # CSV Options
+      delimiter: ","  # , ; \t |
+      enclosure: "\""
+      escape: "\\"
+      has_header: true
+      trim: true
+      
+      # JSON Options
+      assoc: true
+      depth: 512
+      
+      # XML Options
+      keep_root: false
+      
+      # YAML Options
+      encoding: "UTF-8"
+      
+      # Text Options
+      line_break: "\n"  # \n \r\n \r
+      trim: true
+      skip_empty: true
+
+  # Mapping Configuration
+  map:
+    headers: ["id", "name", "email", "age"]  # Optional for indexed arrays
+    rules:
+      - source_field: "id"
+        target_field: "user_id"
+        transformer: "integer"
+        required: true
+      - source_field: "name"
+        target_field: "full_name"
+        transformer: "string"
+        required: true
+      - source_field: "email"
+        target_field: "email_address"
+        transformer: "email"
+        required: true
+      - source_field: "age"
+        target_field: "user_age"
+        transformer: "integer"
+        required: false
+        default_value: 0
+
+  # Filter Configuration (Optional)
+  filter:
+    rules:
+      - key: "email_address"
+        operator: "contains"
+        value: "@company.com"
+        case_sensitive: false
+      - key: "user_age"
+        operator: "greater_than"
+        value: 18
+      - key: "full_name"
+        operator: "regex"
+        value: "^[A-Za-z\\s]+$"
+        regex_flags: "i"
+    logic: "AND"  # AND, OR
+    include_filtered: false
+
+  # Pipeline Options
+  options:
+    enable_caching: true
+    enable_logging: true
+    stop_on_error: false
+    cache_key: "import_data_2024_01_01"
+    timeout: 300
+    enable_metrics: true
+
+# Example configurations for different scenarios
+
+# Example 1: CSV from HTTP with basic mapping
+csv_http_example:
+  download:
+    type: "https"
+    url: "https://api.example.com/users.csv"
+    options:
+      headers:
+        Authorization: "Bearer your-token"
+      timeout: 30
+  read:
+    type: "csv"
+    options:
+      delimiter: ","
+      has_header: true
+  map:
+    rules:
+      - source_field: "id"
+        target_field: "user_id"
+        required: true
+      - source_field: "name"
+        target_field: "full_name"
+        required: true
+
+# Example 2: JSON from API with filtering
+json_api_example:
+  download:
+    type: "https"
+    url: "https://api.example.com/data.json"
+    options:
+      headers:
+        Accept: "application/json"
+        Authorization: "Bearer token"
+  read:
+    type: "json"
+    options:
+      assoc: true
+  map:
+    rules:
+      - source_field: "id"
+        target_field: "record_id"
+        transformer: "integer"
+      - source_field: "title"
+        target_field: "record_title"
+        transformer: "string"
+  filter:
+    rules:
+      - key: "record_title"
+        operator: "contains"
+        value: "important"
+    logic: "AND"
+
+# Example 3: XML from FTP with complex mapping
+xml_ftp_example:
+  download:
+    type: "ftp"
+    url: "ftp://files.example.com/data.xml"
+    options:
+      username: "ftp_user"
+      password: "ftp_password"
+      passive: true
+  read:
+    type: "xml"
+    options:
+      keep_root: false
+  map:
+    rules:
+      - source_field: "item.id"
+        target_field: "product_id"
+        transformer: "integer"
+      - source_field: "item.name"
+        target_field: "product_name"
+        transformer: "string"
+      - source_field: "item.price"
+        target_field: "product_price"
+        transformer: "decimal"
+
+# Example 4: SFTP with YAML and advanced filtering
+yaml_sftp_example:
+  download:
+    type: "sftp"
+    url: "sftp://server.example.com/config.yaml"
+    options:
+      username: "sftp_user"
+      private_key: "/home/user/.ssh/id_rsa"
+      passphrase: "key_password"
+      host_fingerprint: "ssh-rsa AAAAB3NzaC1yc2E..."
+  read:
+    type: "yaml"
+    options:
+      encoding: "UTF-8"
+  map:
+    rules:
+      - source_field: "database.host"
+        target_field: "db_host"
+        transformer: "string"
+      - source_field: "database.port"
+        target_field: "db_port"
+        transformer: "integer"
+  filter:
+    rules:
+      - key: "db_host"
+        operator: "not_equals"
+        value: "localhost"
+      - key: "db_port"
+        operator: "greater_than"
+        value: 1024
+    logic: "AND"
+
+# Example 5: Text file with line-by-line processing
+text_file_example:
+  download:
+    type: "https"
+    url: "https://example.com/logs.txt"
+  read:
+    type: "text"
+    options:
+      line_break: "\n"
+      trim: true
+      skip_empty: true
+  map:
+    rules:
+      - source_field: "0"  # First column (indexed)
+        target_field: "log_line"
+        transformer: "string"
+  filter:
+    rules:
+      - key: "log_line"
+        operator: "contains"
+        value: "ERROR"
+    logic: "OR"

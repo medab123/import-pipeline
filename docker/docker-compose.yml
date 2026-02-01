@@ -1,0 +1,58 @@
+name: import-workflow
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ../:/var/www/html:rw
+      - ../vendor:/var/www/html/vendor:rw
+    ports:
+      - "8000:8000"
+    networks:
+      - import-net
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_DATABASE=import_workflow
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - CACHE_DRIVER=redis
+      - REDIS_CLIENT=phpredis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=null
+      - FILESYSTEM_DRIVER=local
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    depends_on:
+      - postgres-db
+      - redis
+
+  postgres-db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=import_workflow
+    networks:
+      - import-net
+
+  redis:
+    image: "redis:alpine"
+    hostname: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - import-net
+
+networks:
+  import-net:
+    driver: bridge

@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "tests/",
+    "vendor/",
+    "node_modules/",
+    "storage/",
+    "docker/",
+    "bootstrap/cache/"
+  ]
+}
