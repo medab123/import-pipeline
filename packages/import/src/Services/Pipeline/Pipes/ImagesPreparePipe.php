@@ -95,17 +95,17 @@ final readonly class ImagesPreparePipe
     /**
      * Process images for each product in the mapped data.
      *
-     * @param  array<int, array<string, mixed>>  $mappedData  The mapped data
+     * @param  array<int, array<string, mixed>>  $data  The mapped data
      * @param  ImagesPrepareConfigurationData  $config  The images prepare configuration
      * @return array<int, array<string, mixed>> Processed data with images prepared
      */
     private function processImages(
-        array $mappedData,
+        array $data,
         ImagesPrepareConfigurationData $config
     ): array {
         $processedData = [];
 
-        foreach ($mappedData as $product) {
+        foreach ($data as $product) {
             $processedProduct = $product;
             if (isset($product[$config->imagesKey]) && is_string($product[$config->imagesKey])) {
                 $imagesString = $product[$config->imagesKey];

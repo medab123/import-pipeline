@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Elaitech\Import\Services\Pipeline\Pipes;
 
-use Elaitech\Import\Contracts\Services\Product\Creation\ProductFactoryInterface;
 use Elaitech\Import\Enums\ImageDownloadMode;
 use Elaitech\Import\Enums\PipelineStage;
-use App\Models\Product;
 use Elaitech\Import\Services\Jobs\ImageDownloadJob;
 use Elaitech\Import\Services\Pipeline\DTOs\PipelinePassable;
 use Elaitech\Import\Services\Pipeline\DTOs\SaveResultData;
@@ -23,7 +21,6 @@ use Psr\Log\LoggerInterface;
 final readonly class SavePipe
 {
     public function __construct(
-        private ProductFactoryInterface $productFactory,
         private LoggerInterface $logger
     ) {}
 
@@ -89,76 +86,10 @@ final readonly class SavePipe
         $createdCount = 0;
         $updatedCount = 0;
         $errorCount = 0;
-
         $targetId = $passable->config->targetId;
 
         if (! $targetId) {
             throw new \RuntimeException('Target ID is required for saving products. Ensure the import pipeline has a target_id set.');
-        }
-
-        foreach (array_chunk($data, 100) as $chunk) {
-            $stockIds = array_column($chunk, 'stock_id');
-            $existing = Product::with('productable.categorizable')->where('company_id', $targetId)
-                ->withCount([
-                    'media as media_count' => fn ($q) => $q->where('collection_name', Product::MEDIA_COLLECTION),
-                ])
-                ->whereIn('stock_id', $stockIds)
-                ->get()
-                ->keyBy('stock_id');
-
-            foreach ($chunk as $index => $productData) {
-
-                try {
-                    $productData['company_id'] = $targetId;
-
-                    /** @var Product $existingProduct */
-                    $existingProduct = $existing[$productData['stock_id']] ?? null;
-
-                    $isNewProduct = $existingProduct === null;
-                    $hasExistingImages = $existingProduct && $existingProduct->media_count;
-
-                    $product = $existingProduct
-                        ? $this->productFactory->updateProduct($existingProduct, \Arr::except($productData, 'images'))
-                        : $this->productFactory->createProduct(\Arr::except($productData, 'images'));
-
-                    $images = $productData['images'] ?? [];
-
-                    // Check if images should be downloaded based on ImagesPrepareConfigurationData
-                    if ($images && $this->shouldDownloadImages($passable, $isNewProduct, $hasExistingImages)) {
-                        $this->logger->debug('Dispatching image download job', [
-                            'product_id' => $product->id,
-                            'stock_id' => $product->stock_id,
-                            'is_new' => $isNewProduct,
-                            'image_count' => count($images),
-                            'download_mode' => $passable->config->imagesPrepareConfig?->downloadMode->value ?? 'none',
-                        ]);
-                        ImageDownloadJob::dispatch($product->id, $images);
-                    } elseif ($images) {
-                        $this->logger->debug('Skipping image download', [
-                            'product_id' => $product->id,
-                            'stock_id' => $product->stock_id,
-                            'is_new' => $isNewProduct,
-                            'has_existing_images' => $hasExistingImages,
-                            'download_mode' => $passable->config->imagesPrepareConfig?->downloadMode->value ?? 'none',
-                        ]);
-                    }
-
-                    $totalProcessed++;
-                    $existingProduct ? $updatedCount++ : $createdCount++;
-                    $existingProduct
-                        ? $updatedProducts[] = $product->uuid
-                        : $createdProducts[] = $product->uuid;
-
-                } catch (\Throwable $e) {
-                    $errorCount++;
-                    $errors[] = "Row $index: {$e->getMessage()}".$e->getTraceAsString();
-                    $this->logger->error("Row {$index} failed", [
-                        'error' => $e->getMessage(),
-                    ]);
-                    unset($existingProduct, $product);
-                    gc_collect_cycles();
-                }
-            }
         }
 
         return new SaveResultData(

@@ -4,6 +4,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
+    command: bash -c "composer u && php artisan serve --host=0.0.0.0 --port=8000"
     volumes:
       - ../:/var/www/html:rw
       - ../vendor:/var/www/html/vendor:rw
@@ -26,7 +27,6 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=null
       - FILESYSTEM_DRIVER=local
-    command: php artisan serve --host=0.0.0.0 --port=8000
     depends_on:
       - postgres-db
       - redis

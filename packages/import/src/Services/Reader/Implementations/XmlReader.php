@@ -24,6 +24,7 @@ final class XmlReader extends AbstractReader
     public static function convert(string $xml, array $options): array
     {
         $array = self::xmlStringToArray($xml, $options);
+
         if (! $options['keep_root'] && array_key_exists('@root', $array)) {
             unset($array['@root']);
         }

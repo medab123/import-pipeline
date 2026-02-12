@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elaitech\Import\Services\Pipeline\Pipes;
 
 use Elaitech\Import\Enums\PipelineStage;
-use Elaitech\Import\Services\DataMapper\Contracts\DataMapperInterface;
-use Elaitech\Import\Services\DataMapper\DTO\MappingConfigurationData;
+use Elaitech\DataMapper\Contracts\DataMapperInterface;
+use Elaitech\DataMapper\DTO\MappingConfigurationData;
 use Elaitech\Import\Services\Pipeline\DTOs\PipelinePassable;
 use Closure;
 use Psr\Log\LoggerInterface;

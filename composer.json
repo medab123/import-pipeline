@@ -12,11 +12,19 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "./packages/data-mapper",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "elaitech/import": "@dev",
+        "elaitech/data-mapper": "@dev",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/breeze": "^2.3",
         "laravel/fortify": "^1.34",
