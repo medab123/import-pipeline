@@ -27,6 +27,8 @@ class HandleInertiaRequests
                     'email_verified_at' => $request->user()->email_verified_at,
                     'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
                     'roles' => $request->user()->getRoleNames()->toArray(),
+                    'organization_uuid' => $request->user()->organization_uuid,
+                    'organization_name' => $request->user()->organization?->name,
                 ] : null,
             ],
             'flash' => [

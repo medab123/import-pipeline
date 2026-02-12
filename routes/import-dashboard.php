@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth')->prefix('dashboard/import')->name('dashboard.import.')->group(function () {
+Route::middleware(['auth', 'organization'])->prefix('dashboard/import')->name('dashboard.import.')->group(function () {
 
     // Pipeline CRUD
     Route::get('/pipelines', [PipelineController::class, 'index'])->name('pipelines.index');

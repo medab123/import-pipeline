@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Dashboard\Product\ProductActivityLogController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')
+Route::middleware(['auth', 'organization'])
     ->prefix('dashboard/products')
     ->name('dashboard.products.')
     ->group(function () {

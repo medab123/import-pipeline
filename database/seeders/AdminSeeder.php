@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -17,6 +17,9 @@ final class AdminSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get the default organization
+        $organization = Organization::where('slug', 'default')->first();
+
         // Get roles
         $superAdminRole = Role::where('name', 'Super Admin')->where('guard_name', 'web')->first();
         $devRole = Role::where('name', 'Dev')->where('guard_name', 'web')->first();
@@ -26,6 +29,7 @@ final class AdminSeeder extends Seeder
             [
                 'name' => 'Elabidi Mohammed',
                 'password' => Hash::make('password'),
+                'organization_uuid' => $organization?->uuid,
             ]
         );
 
@@ -34,3 +38,4 @@ final class AdminSeeder extends Seeder
         }
     }
 }
+
