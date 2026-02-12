@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elaitech\Import\Services\Pipeline\Pipes;
 
 use Elaitech\Import\Enums\PipelineStage;
-use Elaitech\Import\Services\DataMapper\DTO\DataMappingResultData;
+use Elaitech\DataMapper\DTO\DataMappingResultData;
 use Elaitech\Import\Services\Pipeline\DTOs\ImagesPrepareConfigurationData;
 use Elaitech\Import\Services\Pipeline\DTOs\PipelinePassable;
 use Closure;

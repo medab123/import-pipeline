@@ -8,7 +8,7 @@ use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Factories\ImportPipeline\AbstractImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\Stepper\Steps\MapperConfigStepViewModel;
 use Elaitech\Import\Models\ImportPipeline;
-use Elaitech\Import\Services\DataMapper\ValueTransformer;
+use Elaitech\DataMapper\ValueTransformer;
 use Spatie\ViewModels\ViewModel;
 
 final class MapperConfigStep extends AbstractImportPipelineStep

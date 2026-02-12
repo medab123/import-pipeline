@@ -31,6 +31,8 @@ final class FeedKeysService
      */
     public function getFeedKeys(ImportPipeline $pipeline): array
     {
+        return $this->fetchFeedKeysFromPipeline($pipeline);
+
         $cacheKey = $this->getCacheKey($pipeline->id);
 
         if ($cached = Cache::get($cacheKey)) {
@@ -80,6 +82,7 @@ final class FeedKeysService
 
             return $feedKeys;
         } catch (\Throwable $e) {
+
             $this->logger->error('Failed to fetch feed keys from pipeline', [
                 'pipeline_id' => $pipeline->id,
                 'error' => $e->getMessage(),
