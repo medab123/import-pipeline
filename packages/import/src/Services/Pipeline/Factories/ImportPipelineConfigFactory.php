@@ -6,8 +6,8 @@ namespace Elaitech\Import\Services\Pipeline\Factories;
 
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig as ImportPipelineConfigModel;
-use Elaitech\Import\Services\DataMapper\DTO\MappingConfigurationData;
-use Elaitech\Import\Services\DataMapper\DTO\MappingRuleData;
+use Elaitech\DataMapper\DTO\MappingConfigurationData;
+use Elaitech\DataMapper\DTO\MappingRuleData;
 use Elaitech\Import\Services\Core\DTOs\DownloadRequestData;
 use Elaitech\Import\Services\Core\DTOs\FilterConfigurationData;
 use Elaitech\Import\Services\Core\DTOs\FilterRuleData;
