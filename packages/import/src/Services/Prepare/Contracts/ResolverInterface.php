@@ -14,11 +14,11 @@ use Elaitech\Import\Services\Pipeline\DTOs\PrepareConfigurationData;
 interface ResolverInterface
 {
     /**
-     * Resolve and transform a single row of data.
+     * handle and transform a single row of data.
      *
      * @param  array<string, mixed>  $row  The row data to transform
      * @param  PrepareConfigurationData  $config  The preparation configuration
      * @return array<string, mixed> The transformed row
      */
-    public function resolve(array $row, PrepareConfigurationData $config): array;
+    public function handle(array $row, PrepareConfigurationData $config): array;
 }

@@ -64,7 +64,7 @@ final class ImagesPrepareConfigStepViewModel extends ViewModel
 
     public function imagesKey(): string
     {
-        return $this->imagesPrepareConfig->get('images_key', 'images');
+        return $this->imagesPrepareConfig->get('images_key', 'images') ?? 'images';
     }
 
     public function targetFields(): array

@@ -95,7 +95,7 @@ abstract class BaseImportServiceProvider extends ServiceProvider
 
         // Load configuration from config files if they exist
         if ($this->app->bound('config')) {
-            $configKey = "import.{$this->getServiceType()}";
+            $configKey = "import-pipeline.{$this->getServiceType()}";
             if ($this->app->make('config')->has($configKey)) {
                 $this->config->merge($this->app->make('config')->get($configKey, []));
             }

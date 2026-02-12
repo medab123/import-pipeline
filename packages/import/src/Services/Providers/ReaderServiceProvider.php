@@ -14,11 +14,7 @@ final class ReaderServiceProvider extends BaseImportServiceProvider
 {
     protected function getServiceMappings(): array
     {
-        return [
-            'csv' => CsvReader::class,
-            'json' => JsonReader::class,
-            'xml' => XmlReader::class,
-        ];
+        return config('import-pipelines.readers', []);
     }
 
     protected function getFactoryClass(): string

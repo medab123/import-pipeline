@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elaitech\Import\Services\Providers;
 
+use Elaitech\Import\Services\Core\Operators\FilterOperatorInterface;
 use Elaitech\Import\Services\Filter\Contracts\FilterInterface;
 use Elaitech\Import\Services\Filter\Contracts\FilterValidatorInterface;
 use Elaitech\Import\Services\Filter\Contracts\OperatorRegistryInterface;
@@ -56,39 +57,22 @@ final class FilterServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(FilterInterface::class, DataFilterService::class);
-        $this->app->singleton(DataFilterService::class);
     }
 
     private function registerOperators(): void
     {
         $this->app->afterResolving(OperatorRegistryInterface::class, function (OperatorRegistryInterface $registry) {
-            $this->registerBuiltInOperators($registry);
+            $operators = config('import-pipelines.filters.operators', []);
+
+            foreach ($operators as $operator) {
+                $operator = new $operator;
+                if (!($operator instanceof FilterOperatorInterface)) {
+                    throw new \InvalidArgumentException("Operator '{$operator}' should implement " . FilterOperatorInterface::class);
+                }
+
+                $registry->register($operator);
+            }
         });
     }
 
-    private function registerBuiltInOperators(OperatorRegistryInterface $registry): void
-    {
-        $operators = [
-            new EqualsOperator,
-            new NotEqualsOperator,
-            new ContainsOperator,
-            new NotContainsOperator,
-            new RegexOperator,
-            new NotRegexOperator,
-            new GreaterThanOperator,
-            new LessThanOperator,
-            new InOperator,
-            new NotInOperator,
-            new BetweenOperator,
-            new NotBetweenOperator,
-            new IsNullOperator,
-            new IsNotNullOperator,
-            new StartsWithOperator,
-            new EndsWithOperator,
-        ];
-
-        foreach ($operators as $operator) {
-            $registry->register($operator);
-        }
-    }
 }

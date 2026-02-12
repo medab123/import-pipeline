@@ -2,7 +2,70 @@
 
 declare(strict_types=1);
 
+use Elaitech\Import\Services\Downloader\Implementations\FtpDownloader;
+use Elaitech\Import\Services\Downloader\Implementations\HttpDownloader;
+use Elaitech\Import\Services\Downloader\Implementations\SftpDownloader;
+use Elaitech\Import\Services\Filter\Implementations\BetweenOperator;
+use Elaitech\Import\Services\Filter\Implementations\ContainsOperator;
+use Elaitech\Import\Services\Filter\Implementations\EndsWithOperator;
+use Elaitech\Import\Services\Filter\Implementations\EqualsOperator;
+use Elaitech\Import\Services\Filter\Implementations\GreaterThanOperator;
+use Elaitech\Import\Services\Filter\Implementations\InOperator;
+use Elaitech\Import\Services\Filter\Implementations\IsNotNullOperator;
+use Elaitech\Import\Services\Filter\Implementations\IsNullOperator;
+use Elaitech\Import\Services\Filter\Implementations\LessThanOperator;
+use Elaitech\Import\Services\Filter\Implementations\NotBetweenOperator;
+use Elaitech\Import\Services\Filter\Implementations\NotContainsOperator;
+use Elaitech\Import\Services\Filter\Implementations\NotEqualsOperator;
+use Elaitech\Import\Services\Filter\Implementations\NotInOperator;
+use Elaitech\Import\Services\Filter\Implementations\NotRegexOperator;
+use Elaitech\Import\Services\Filter\Implementations\RegexOperator;
+use Elaitech\Import\Services\Filter\Implementations\StartsWithOperator;
+use Elaitech\Import\Services\Reader\Implementations\CsvReader;
+use Elaitech\Import\Services\Reader\Implementations\JsonReader;
+use Elaitech\Import\Services\Reader\Implementations\XmlReader;
+
 return [
+
+    'downloaders' => [
+        'http' => HttpDownloader::class,
+        'https' => HttpDownloader::class,
+        'ftp' => FtpDownloader::class,
+        'sftp' => SftpDownloader::class,
+    ],
+
+    'prepare' => [
+        'using' => null,
+    ],
+
+    'filters' => [
+        'operators' => [
+            EqualsOperator::class,
+            NotEqualsOperator::class,
+            ContainsOperator::class,
+            NotContainsOperator::class,
+            RegexOperator::class,
+            NotRegexOperator::class,
+            GreaterThanOperator::class,
+            LessThanOperator::class,
+            InOperator::class,
+            NotInOperator::class,
+            BetweenOperator::class,
+            NotBetweenOperator::class,
+            IsNullOperator::class,
+            IsNotNullOperator::class,
+            StartsWithOperator::class,
+            EndsWithOperator::class,
+        ]
+    ],
+
+    'readers' => [
+        'csv' => CsvReader::class,
+        'json' => JsonReader::class,
+        'xml' => XmlReader::class,
+    ],
+
+
     'queues' => [
         'default' => env('IMPORT_PIPELINES_QUEUE', 'import-pipelines'),
         'high_priority' => env('IMPORT_PIPELINES_HIGH_PRIORITY_QUEUE', 'import-pipelines-high'),
@@ -36,41 +99,6 @@ return [
         'channels' => [
             'execution' => env('IMPORT_PIPELINES_EXECUTION_LOG_CHANNEL', 'single'),
             'scheduling' => env('IMPORT_PIPELINES_SCHEDULING_LOG_CHANNEL', 'single'),
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Import Resolvers Configuration
-    |--------------------------------------------------------------------------
-    |
-    | This configuration defines the resolvers available for the prepare stage
-    | of the import pipeline. Each resolver can be configured with its specific
-    | settings.
-    |
-    */
-
-    'resolvers' => [
-        'category' => [
-            'resolver' => \App\Services\Import\Prepare\Implementations\CategoryResolver::class,
-            'config' => [
-                'field' => 'category',
-                'match_by' => 'slug',
-            ],
-        ],
-        'generate_stock_id_from_vin' => [
-            'resolver' => \App\Services\Import\Prepare\Implementations\StockIdResolver::class,
-            'config' => [],
-        ],
-        'generate_vin_from_stock_id' => [
-            'resolver' => \App\Services\Import\Prepare\Implementations\VinResolver::class,
-            'config' => [],
-        ],
-        'pricing' => [
-            'resolver' => \App\Services\Import\Prepare\Implementations\PricingResolver::class,
-        ],
-        'title' => [
-            'resolver' => \App\Services\Import\Prepare\Implementations\TitleResolver::class,
         ],
     ],
 ];
