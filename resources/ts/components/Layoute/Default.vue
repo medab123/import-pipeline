@@ -18,6 +18,7 @@ import {watch} from "vue";
 import { toast } from "vue-sonner";
 import { Toaster } from '@/components/ui/sonner'
 import 'vue-sonner/style.css' // vue-sonner v2 requires this import
+import ModeToggle from '@/components/ModeToggle.vue'
 
 interface ToastNotification {
   title: string;
@@ -63,9 +64,12 @@ watch(() => usePage().props.toastNotifications, (newPageNotifications: ToastNoti
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <div class="ml-auto flex items-center gap-2">
+            <ModeToggle />
+          </div>
         </div>
       </header>
-      <div class="flex flex-1 flex-col gap-6 p-4 md:p-6 pt-6 min-h-0 overflow-x-hidden">
+      <div class="flex flex-1 flex-col gap-6 p-4 md:p-6 pt-6 min-h-0 min-w-0 overflow-x-hidden">
         <slot/>
       </div>
     </SidebarInset>

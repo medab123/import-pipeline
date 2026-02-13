@@ -20,7 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -294,7 +293,7 @@ const handleImportChange = (event: Event) => {
         </div>
       </CardHeader>
       <CardContent class="pt-6">
-        <div class="overflow-x-auto rounded-lg border bg-background">
+        <div class="overflow-x-auto rounded-lg border bg-background max-w-full">
           <Table class="min-w-full">
             <TableHeader>
               <TableRow>
@@ -420,77 +419,81 @@ const handleImportChange = (event: Event) => {
                   <span class="text-xs ml-1">{{ format(new Date(pipeline.createdAt), 'HH:mm') }}</span>
                 </TableCell>
                 <TableCell class="w-[100px] text-right" @click.stop>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger as-child>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger as-child>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              class="opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent"
-                            >
-                              <MoreHorizontal class="w-4 h-4" />
-                              <span class="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" class="w-56">
-                      <DropdownMenuItem as-child>
-                        <Link :href="route('dashboard.import.pipelines.show', { pipeline: pipeline.id })" class="flex items-center">
-                          <Eye class="w-4 h-4 mr-2" />
-                          View Details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem as-child>
-                        <Link :href="route('dashboard.import.pipelines.executions', { pipeline: pipeline.id })" class="flex items-center">
-                          <History class="w-4 h-4 mr-2" />
-                          Execution History
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        v-if="can('export pipelines')"
-                        @click="() => exportPipeline(pipeline)"
-                        class="flex items-center"
-                      >
-                        <Download class="w-4 h-4 mr-2" />
-                        Export as YAML
-                      </DropdownMenuItem>
-                      <DropdownMenuItem as-child>
-                        <Link :href="route('dashboard.import.pipelines.stepper.edit', { pipeline: pipeline.id })" class="flex items-center">
-                          <Edit class="w-4 h-4 mr-2" />
-                          Edit Pipeline
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem @click="() => togglePipelineStatus(pipeline)" class="flex items-center">
-                        <Play v-if="!pipeline.isActive" class="w-4 h-4 mr-2" />
-                        <Pause v-else class="w-4 h-4 mr-2" />
-                        {{ pipeline.isActive ? 'Pause' : 'Start' }} Pipeline
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        @click="() => processNow(pipeline)"
-                        class="flex items-center"
-                        :disabled="pipeline.status.name !== 'ACTIVE'"
-                      >
-                        <Activity class="w-4 h-4 mr-2" />
-                        Process Now
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        @click="() => deletePipeline(pipeline)"
-                        class="flex items-center text-destructive focus:text-destructive"
-                      >
-                        <Trash2 class="w-4 h-4 mr-2" />
-                        Delete Pipeline
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Pipeline actions</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div class="flex items-center justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      as-child
+                    >
+                      <Link :href="route('dashboard.import.pipelines.show', { pipeline: pipeline.id })">
+                        <Eye class="h-4 w-4" />
+                        <span class="sr-only">View Details</span>
+                      </Link>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger as-child>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                          <MoreHorizontal class="h-4 w-4" />
+                          <span class="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" class="w-56">
+                        <DropdownMenuItem as-child>
+                          <Link :href="route('dashboard.import.pipelines.show', { pipeline: pipeline.id })" class="flex items-center">
+                            <Eye class="w-4 h-4 mr-2" />
+                            View Details
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem as-child>
+                          <Link :href="route('dashboard.import.pipelines.executions', { pipeline: pipeline.id })" class="flex items-center">
+                            <History class="w-4 h-4 mr-2" />
+                            Execution History
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          v-if="can('export pipelines')"
+                          @click="() => exportPipeline(pipeline)"
+                          class="flex items-center"
+                        >
+                          <Download class="w-4 h-4 mr-2" />
+                          Export as YAML
+                        </DropdownMenuItem>
+                        <DropdownMenuItem as-child>
+                          <Link :href="route('dashboard.import.pipelines.stepper.edit', { pipeline: pipeline.id })" class="flex items-center">
+                            <Edit class="w-4 h-4 mr-2" />
+                            Edit Pipeline
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem @click="() => togglePipelineStatus(pipeline)" class="flex items-center">
+                          <Play v-if="!pipeline.isActive" class="w-4 h-4 mr-2" />
+                          <Pause v-else class="w-4 h-4 mr-2" />
+                          {{ pipeline.isActive ? 'Pause' : 'Start' }} Pipeline
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          @click="() => processNow(pipeline)"
+                          class="flex items-center"
+                          :disabled="pipeline.status.name !== 'ACTIVE'"
+                        >
+                          <Activity class="w-4 h-4 mr-2" />
+                          Process Now
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          @click="() => deletePipeline(pipeline)"
+                          class="flex items-center text-destructive focus:text-destructive"
+                        >
+                          <Trash2 class="w-4 h-4 mr-2" />
+                          Delete Pipeline
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             </TableBody>

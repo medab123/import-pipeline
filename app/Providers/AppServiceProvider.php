@@ -88,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(ImportPipeline::class, ImportPipelinePolicy::class);
+        Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
     }
 
     /**

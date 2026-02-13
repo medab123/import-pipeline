@@ -7,6 +7,7 @@ import {
     Upload,
     Users,
     Activity,
+    Settings,
 } from "lucide-vue-next"
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
@@ -74,18 +75,40 @@ const data = computed(() => {
         },
     ]
 
-    navMain.push({
-        title: "Product",
-        url: route('dashboard.products.activity-logs.search'),
-        icon: Activity,
-        isActive: route().current()?.startsWith('dashboard.products.activity-logs') ?? false,
-        items: [
-            {
-                title: "Activity Log",
-                url: route('dashboard.products.activity-logs.search'),
-            },
-        ],
-    })
+    if (can('manage users')) {
+        navMain.push({
+            title: "Organization",
+            url: route('dashboard.organization.users.index'),
+            icon: Users,
+            isActive: route().current()?.startsWith('dashboard.organization') ?? false,
+            items: [
+                {
+                    title: "Users",
+                    url: route('dashboard.organization.users.index'),
+                },
+            ],
+        })
+
+        // Settings Group
+        navMain.push({
+            title: "Settings",
+            url: "#", // Placeholder or redirect to first item
+            icon: Settings,
+            isActive: route().current()?.startsWith('dashboard.organization.tokens') || route().current()?.startsWith('dashboard.organization.target-fields'),
+            items: [
+                {
+                    title: "Target Fields",
+                    url: route('dashboard.organization.target-fields.index'),
+                },
+                {
+                    title: "Token Management",
+                    url: route('dashboard.organization.tokens.index'),
+                },
+            ],
+        })
+    }
+        })
+    }
 
     return {
         user: userData.value,

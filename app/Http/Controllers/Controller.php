@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ToastNotificationVariant;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 
 abstract class Controller
 {

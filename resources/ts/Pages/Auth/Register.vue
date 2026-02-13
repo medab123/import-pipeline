@@ -1,43 +1,34 @@
 <script setup lang="ts">
-import { Head, Link, useForm} from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {FormMessage, Form} from '@/components/ui/form'
+import { FormMessage, Form } from '@/components/ui/form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Database } from 'lucide-vue-next'
 import { ref } from 'vue'
-
-interface Props {
-  status?: string
-  canResetPassword?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  status: undefined,
-  canResetPassword: false,
-})
+import { Database } from 'lucide-vue-next'
 
 const form = useForm({
+  organization_name: '',
+  name: '',
   email: '',
   password: '',
-  remember: false,
+  password_confirmation: '',
 })
 
 const showPassword = ref(false)
 
 const submit = () => {
-  form.post('/login', {
+  form.post('/register', {
     onFinish: () => {
-      form.reset('password')
+      form.reset('password', 'password_confirmation')
     },
   })
 }
 </script>
 
 <template>
-  <Head title="Log in" />
+  <Head title="Register" />
 
   <div class="min-h-screen flex flex-col items-center justify-center bg-background p-4 relative overflow-hidden">
     <!-- Background Pattern -->
@@ -53,18 +44,39 @@ const submit = () => {
 
     <Card class="w-full max-w-md shadow-2xl border-muted/60">
       <CardHeader class="space-y-1 text-center">
-        <CardTitle class="text-2xl font-bold">Welcome back</CardTitle>
+        <CardTitle class="text-2xl font-bold">Create an account</CardTitle>
         <CardDescription>
-          Enter your credentials to access your account
+          Set up your organization and start importing data
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form :form="form" @submit.prevent="submit" class="space-y-4">
-          <div v-if="status" class="mb-4">
-            <Alert>
-              <AlertCircle class="h-4 w-4" />
-              <AlertDescription>{{ status }}</AlertDescription>
-            </Alert>
+          <div class="space-y-2">
+            <Label for="organization_name">Organization Name</Label>
+            <Input
+              id="organization_name"
+              v-model="form.organization_name"
+              type="text"
+              required
+              autofocus
+              placeholder="Acme Inc."
+              :class="{ 'border-destructive': form.errors.organization_name }"
+            />
+            <FormMessage for="organization_name"></FormMessage>
+          </div>
+
+          <div class="space-y-2">
+            <Label for="name">Full Name</Label>
+            <Input
+              id="name"
+              v-model="form.name"
+              type="text"
+              required
+              autocomplete="name"
+              placeholder="John Doe"
+              :class="{ 'border-destructive': form.errors.name }"
+            />
+            <FormMessage for="name"></FormMessage>
           </div>
 
           <div class="space-y-2">
@@ -74,7 +86,6 @@ const submit = () => {
               v-model="form.email"
               type="email"
               required
-              autofocus
               autocomplete="username"
               placeholder="name@example.com"
               :class="{ 'border-destructive': form.errors.email }"
@@ -83,23 +94,14 @@ const submit = () => {
           </div>
 
           <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <Label for="password">Password</Label>
-              <Link
-                v-if="canResetPassword"
-                href="/forgot-password"
-                class="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label for="password">Password</Label>
             <div class="relative">
               <Input
                 id="password"
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                placeholder="Enter your password"
+                placeholder="Create a password"
                 :class="{ 'border-destructive': form.errors.password }"
               />
               <Button
@@ -115,16 +117,15 @@ const submit = () => {
             <FormMessage for="password"></FormMessage>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <input
-              id="remember"
-              v-model="form.remember"
-              type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+          <div class="space-y-2">
+            <Label for="password_confirmation">Confirm Password</Label>
+            <Input
+              id="password_confirmation"
+              v-model="form.password_confirmation"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              placeholder="Confirm your password"
             />
-            <Label for="remember" class="text-sm font-normal cursor-pointer">
-              Remember me
-            </Label>
           </div>
 
           <Button
@@ -132,14 +133,14 @@ const submit = () => {
             class="w-full"
             :disabled="form.processing"
           >
-            <span v-if="form.processing">Logging in...</span>
-            <span v-else>Log in</span>
+            <span v-if="form.processing">Creating account...</span>
+            <span v-else>Create account</span>
           </Button>
 
           <div class="text-center text-sm text-muted-foreground">
-            Don't have an account?
-            <Link href="/register" class="text-primary hover:underline font-medium">
-              Register
+            Already have an account?
+            <Link href="/login" class="text-primary hover:underline font-medium">
+              Log in
             </Link>
           </div>
         </Form>

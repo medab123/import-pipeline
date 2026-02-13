@@ -9,12 +9,12 @@ Route::middleware(['auth', 'organization'])
     ->prefix('dashboard/products')
     ->name('dashboard.products.')
     ->group(function () {
-        Route::get('activity-logs', [ProductActivityLogController::class, 'search'])
-            ->name('activity-logs.search');
+        // Route::get('activity-logs', [ProductActivityLogController::class, 'search'])
+        //     ->name('activity-logs.search');
 
-        Route::get('{uuid}/activity-logs', [ProductActivityLogController::class, 'index'])
-            ->name('activity-logs');
+        // Route::get('{uuid}/activity-logs', [ProductActivityLogController::class, 'index'])
+        //     ->name('activity-logs');
 
-        Route::get('{uuid}/activity-logs/{activity}', [ProductActivityLogController::class, 'show'])
-            ->name('activity-logs.show');
+        // Route::get('{uuid}/activity-logs/{activity}', [ProductActivityLogController::class, 'show'])
+        //     ->name('activity-logs.show');
     });

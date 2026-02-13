@@ -44,7 +44,7 @@ final class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::registerView(function () {
-            return view('auth.register');
+            return inertia('Auth/Register');
         });
 
         Fortify::requestPasswordResetLinkView(function () {
@@ -63,6 +63,11 @@ final class FortifyServiceProvider extends ServiceProvider
         $this->app->singleton(
             \Laravel\Fortify\Contracts\LogoutResponse::class,
             LogoutResponse::class
+        );
+
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            \App\Http\Responses\RegisterResponse::class
         );
 
         $this->configureRateLimiting();

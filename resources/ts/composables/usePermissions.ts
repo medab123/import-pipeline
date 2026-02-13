@@ -14,6 +14,7 @@ interface PageProps {
   auth: {
     user: AuthUser | null
   }
+  [key: string]: unknown
 }
 
 /**
@@ -25,8 +26,16 @@ interface PageProps {
 export function usePermissions() {
   const page = usePage<PageProps>()
 
+  const authUser = computed(() => {
+    return page.props.auth?.user ?? null
+  })
+
   const permissions = computed(() => {
     return page.props.auth?.user?.permissions ?? []
+  })
+
+  const roles = computed(() => {
+    return page.props.auth?.user?.roles ?? []
   })
 
   /**
@@ -53,9 +62,22 @@ export function usePermissions() {
     return !can(permission)
   }
 
+  /**
+   * Check if the user has a specific role
+   *
+   * @param role - The role name to check
+   * @returns true if the user has the role, false otherwise
+   */
+  const hasRole = (role: string): boolean => {
+    return roles.value.includes(role)
+  }
+
   return {
+    authUser,
     can,
     cannot,
+    hasRole,
     permissions,
+    roles,
   }
 }

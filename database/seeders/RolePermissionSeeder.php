@@ -23,6 +23,7 @@ final class RolePermissionSeeder extends Seeder
         // Create permissions
         $permissions = [
             'manage users',
+            'view organization users',
             'manage pipelines',
             'view pipelines',
             'create pipelines',
