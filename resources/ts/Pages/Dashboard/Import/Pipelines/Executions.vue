@@ -26,7 +26,8 @@ import {
   RefreshCw,
   Eye,
   Info,
-  Play
+  Play,
+  Database
 } from 'lucide-vue-next'
 import { PipelineViewModel } from '@/types/generated'
 import { format, formatDistance } from 'date-fns'
@@ -235,7 +236,7 @@ const isActive = computed(() => props.pipeline.isActive)
                 <TableHead class="w-[120px]">Success Rate</TableHead>
                 <TableHead class="w-[160px]">Performance</TableHead>
                 <TableHead class="w-[250px]">Error</TableHead>
-                <TableHead class="w-[100px] text-right">Actions</TableHead>
+                <TableHead class="w-[140px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -352,13 +353,21 @@ const isActive = computed(() => props.pipeline.isActive)
                   </div>
                   <span v-else class="text-muted-foreground">-</span>
                 </TableCell>
-                <TableCell class="w-[100px] text-right" @click.stop>
-                  <Button variant="ghost" size="sm" as-child>
-                    <Link :href="route('dashboard.import.pipelines.executions.show', { pipeline: props.pipeline.id, execution: execution.id })">
-                      <Eye class="w-4 h-4" />
-                      <span class="sr-only">View details</span>
-                    </Link>
-                  </Button>
+                <TableCell class="w-[140px] text-right" @click.stop>
+                  <div class="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" :title="'View Data'" as-child>
+                      <Link :href="route('dashboard.import.pipelines.executions.results', { pipeline: props.pipeline.id, execution: execution.id })">
+                        <Database class="w-4 h-4" />
+                        <span class="sr-only">View Results</span>
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" :title="'View Details'" as-child>
+                      <Link :href="route('dashboard.import.pipelines.executions.show', { pipeline: props.pipeline.id, execution: execution.id })">
+                        <Eye class="w-4 h-4" />
+                        <span class="sr-only">View details</span>
+                      </Link>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             </TableBody>

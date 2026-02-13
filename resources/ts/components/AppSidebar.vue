@@ -107,8 +107,7 @@ const data = computed(() => {
             ],
         })
     }
-        })
-    }
+
 
     return {
         user: userData.value,

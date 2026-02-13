@@ -195,6 +195,30 @@ final class PipelineController extends Controller
         ]);
     }
 
+    public function showExecutionResults(ImportPipeline $pipeline, int $execution): Response|RedirectResponse
+    {
+        $executionModel = $this->dashboardService->getExecution($execution);
+
+        if (! $executionModel || $executionModel->pipeline_id !== $pipeline->id) {
+            $this->toast('Execution not found', ToastNotificationVariant::Destructive);
+
+            return redirect()->route('dashboard.import.pipelines.executions', ['pipeline' => $pipeline->id]);
+        }
+
+        $result = \Elaitech\Import\Models\ImportPipelineResult::where('execution_id', $execution)->first();
+
+        return inertia('Dashboard/Import/Pipelines/ExecutionResults', [
+            'pipeline' => new PipelineViewModel($pipeline),
+            'execution' => [
+                'id' => $executionModel->id,
+                'status' => $executionModel->status->value,
+                'startedAt' => $executionModel->started_at?->toIso8601String(),
+                'completedAt' => $executionModel->completed_at?->toIso8601String(),
+            ],
+            'resultData' => $result ? $result->data : [],
+        ]);
+    }
+
     /**
      * Export the given pipeline as a YAML configuration file.
      */

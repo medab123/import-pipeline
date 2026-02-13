@@ -17,7 +17,7 @@ const props = defineProps<BasicInfoStepViewModel>()
 const form = useForm({
   name: props.pipeline.name || '',
   description: props.pipeline.description || '',
-  target_id: props.pipeline.target_id || null,
+  target_id: props.pipeline.targetId || null,
   frequency: props.pipeline.frequency || 'daily',
   start_time: props.pipeline.startTime || '09:00',
   is_active: props.pipeline.isActive ?? true,

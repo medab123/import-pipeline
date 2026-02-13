@@ -105,7 +105,7 @@ export type PipelineViewModel = {
 id: number;
 name: string;
 description: string;
-company: any;
+targetId: any;
 frequency: string;
 startTime: string;
 formattedStartTime: string;

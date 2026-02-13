@@ -34,6 +34,7 @@ Route::middleware(['auth', 'organization'])->prefix('dashboard/import')->name('d
     Route::post('/pipelines/{pipeline}/process-now', [PipelineController::class, 'processNow'])->name('pipelines.process-now');
     Route::get('/pipelines/{pipeline}/executions', [PipelineController::class, 'executions'])->name('pipelines.executions');
     Route::get('/pipelines/{pipeline}/executions/{execution}', [PipelineController::class, 'showExecution'])->name('pipelines.executions.show');
+    Route::get('/pipelines/{pipeline}/executions/{execution}/results', [PipelineController::class, 'showExecutionResults'])->name('pipelines.executions.results');
     Route::get('/pipelines/{pipeline}/activity-logs', [PipelineController::class, 'activityLogs'])->name('pipelines.activity-logs');
     Route::get('/pipelines/{pipeline}/activity-logs/{activity}', [PipelineController::class, 'showActivityLog'])->name('pipelines.activity-logs.show');
     Route::get('/pipelines/{pipeline}/export', [PipelineController::class, 'export'])->name('pipelines.export');

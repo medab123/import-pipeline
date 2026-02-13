@@ -32,11 +32,9 @@ final class PipelineViewModel extends ViewModel
         return $this->pipeline->description;
     }
 
-    public function company(): ?CompanyViewModel
+    public function targetId(): int|string
     {
-        return $this->pipeline->company
-            ? new CompanyViewModel($this->pipeline->company)
-            : null;
+        return $this->pipeline->target_id;
     }
 
     public function frequency(): ?string
