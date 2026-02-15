@@ -1,3 +1,6 @@
 [submodule "packages/import"]
 	path = packages/import
 	url = https://github.com/medab123/import.git
+[submodule "packages/data-mapper"]
+	path = packages/data-mapper
+	url = https://github.com/medab123/data-mapper.git
