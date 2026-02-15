@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "44a3bec8d05a92061cbb73be94ce5ebd",
+    "content-hash": "7f143df7cf79f56c4bd1e7b1169fdbad",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -667,11 +667,11 @@
             "dist": {
                 "type": "path",
                 "url": "./packages/data-mapper",
-                "reference": "5c95aa7fda57496fe817eaacdfde40a8ae591c13"
+                "reference": "a70e8d21ad970daa0bed1ef30299002ee2c0f646"
             },
             "require": {
                 "illuminate/support": "^12.0",
-                "php": "^8.2",
+                "php": "^8.4",
                 "spatie/laravel-data": "^4.19"
             },
             "require-dev": {
@@ -718,7 +718,7 @@
             "dist": {
                 "type": "path",
                 "url": "./packages/import",
-                "reference": "cc27d4a0937dabdfc65528e5b3435c92711f6528"
+                "reference": "5380a7ca99815cbf4b42fbc6add8d328372e89ef"
             },
             "require": {
                 "illuminate/console": "^12.0",
@@ -728,7 +728,7 @@
                 "illuminate/support": "^12.0",
                 "league/flysystem-ftp": "^3.31",
                 "league/flysystem-sftp-v3": "^3.31",
-                "php": "^8.2",
+                "php": "^8.4",
                 "spatie/laravel-activitylog": "^4.11",
                 "spatie/laravel-data": "^4.19",
                 "spatie/laravel-view-models": "^1.6",
@@ -1321,16 +1321,16 @@
         },
         {
             "name": "inertiajs/inertia-laravel",
-            "version": "v2.0.19",
+            "version": "v2.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/inertiajs/inertia-laravel.git",
-                "reference": "732a991342a0f82653a935440e2f3b9be1eb6f6e"
+                "reference": "02a719d1120378aed68053b5b2d35157140df50e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/732a991342a0f82653a935440e2f3b9be1eb6f6e",
-                "reference": "732a991342a0f82653a935440e2f3b9be1eb6f6e",
+                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/02a719d1120378aed68053b5b2d35157140df50e",
+                "reference": "02a719d1120378aed68053b5b2d35157140df50e",
                 "shasum": ""
             },
             "require": {
@@ -1385,9 +1385,9 @@
             ],
             "support": {
                 "issues": "https://github.com/inertiajs/inertia-laravel/issues",
-                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.19"
+                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.20"
             },
-            "time": "2026-01-13T15:29:20+00:00"
+            "time": "2026-02-13T11:53:06+00:00"
         },
         {
             "name": "laravel/breeze",
@@ -2854,16 +2854,16 @@
         },
         {
             "name": "nette/utils",
-            "version": "v4.1.2",
+            "version": "v4.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "f76b5dc3d6c6d3043c8d937df2698515b99cbaf5"
+                "reference": "bb3ea637e3d131d72acc033cfc2746ee893349fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/f76b5dc3d6c6d3043c8d937df2698515b99cbaf5",
-                "reference": "f76b5dc3d6c6d3043c8d937df2698515b99cbaf5",
+                "url": "https://api.github.com/repos/nette/utils/zipball/bb3ea637e3d131d72acc033cfc2746ee893349fe",
+                "reference": "bb3ea637e3d131d72acc033cfc2746ee893349fe",
                 "shasum": ""
             },
             "require": {
@@ -2875,8 +2875,10 @@
             },
             "require-dev": {
                 "jetbrains/phpstorm-attributes": "^1.2",
+                "nette/phpstan-rules": "^1.0",
                 "nette/tester": "^2.5",
-                "phpstan/phpstan": "^2.0@stable",
+                "phpstan/extension-installer": "^1.4@stable",
+                "phpstan/phpstan": "^2.1@stable",
                 "tracy/tracy": "^2.9"
             },
             "suggest": {
@@ -2937,9 +2939,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.1.2"
+                "source": "https://github.com/nette/utils/tree/v4.1.3"
             },
-            "time": "2026-02-03T17:21:09+00:00"
+            "time": "2026-02-13T03:05:33+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -10264,8 +10266,8 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.2"
+        "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

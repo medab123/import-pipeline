@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    command: bash -c "composer u && php artisan serve --host=0.0.0.0 --port=8000"
+    command: bash -c "composer install  && php artisan serve --host=0.0.0.0 --port=8000"
     volumes:
       - ../:/var/www/html:rw
       - ../vendor:/var/www/html/vendor:rw

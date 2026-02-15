@@ -3,16 +3,20 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Query\Expression;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+
         Schema::create('organizations', function (Blueprint $table) {
-            $table->uuid('uuid')->primary();
+            $table->uuid()->default(new Expression('public.gen_random_uuid()'))
+                ->primary()->index();
             $table->string('name');
             $table->string('slug')->unique();
             $table->json('settings')->nullable();
