@@ -1,46 +1,17 @@
-FROM php:8.4-fpm
+FROM public.ecr.aws/h7v5u9x4/a2d/laravel84-tpl:gd-pdftk
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd ftp \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+USER root
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy application files
-COPY . /var/www/html
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Generate TypeScript types (create stub if generation fails)
-RUN php artisan typescript:transform || true
-RUN mkdir -p resources/ts/types && test -f resources/ts/types/generated.ts || printf '// Stub types file\nexport type ListPipelineViewModel = any;\nexport type PipelineViewModel = any;\nexport type PaginatorViewModel = any;\nexport type CreateStepViewModel = any;\nexport type PipelineStatsViewModel = any;\nexport type ActivityLogViewModel = any;\nexport type ImagesPrepareConfigStepViewModel = any;\nexport type DownloaderConfigStepViewModel = any;\nexport type ReaderConfigStepViewModel = any;\nexport type BasicInfoStepViewModel = any;\nexport type MapperConfigStepViewModel = any;\nexport type PreviewStepViewModel = any;\nexport type FilterConfigStepViewModel = any;\n' > resources/ts/types/generated.ts
-
-# Install Node dependencies (build will be done at runtime or separately)
-RUN npm install
+RUN sed -i '/xdebug.mode/d' /usr/local/etc/php/php.ini && echo "xdebug.mode = profile" >> /usr/local/etc/php/php.ini
+RUN sed -i '/xdebug.output_dir/d' /usr/local/etc/php/php.ini && echo "xdebug.output_dir = /tmp/xdebug_profiles" >> /usr/local/etc/php/php.ini
+RUN sed -i '/max_input_vars/d' /usr/local/etc/php/php.ini && echo "max_input_vars = 10000" >> /usr/local/etc/php/php.ini
+RUN sed -i '/memory_limit/d' /usr/local/etc/php/php.ini && echo "memory_limit = 1G" >> /usr/local/etc/php/php.ini
 
 USER www-data
 
-EXPOSE 9000
+COPY --chown=www-data:www-data ./ .
+COPY --chown=www-data:www-data ./docker/supervisord/ /opt/supervisord/
 
-CMD ["php-fpm"]
+RUN composer install
+RUN npm install && npm run build
+

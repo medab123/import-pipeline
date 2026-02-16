@@ -4,14 +4,19 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    command: bash -c "composer install  && php artisan serve --host=0.0.0.0 --port=8000"
+      args:
+        COMPOSER_AUTH: ${COMPOSER_AUTH}
     volumes:
+      - ./xdebug_profiles:/tmp/xdebug_profiles
+      - ./supervisord/local:/opt/supervisord/local:rw
       - ../:/var/www/html:rw
       - ../vendor:/var/www/html/vendor:rw
+      - ./coverage:/opt/phpstorm-coverage:rw
+    command: bash -c "composer install && npm install && npm run build && cp /opt/supervisord/local/* /etc/supervisor/conf.d/ || true && supervisord -c  /etc/supervisor/supervisor.conf"
     ports:
-      - "8000:8000"
+      - "84:8080"
     networks:
-      - import-net
+      - import-workflow-net
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
@@ -21,38 +26,56 @@ services:
       - DB_DATABASE=import_workflow
       - DB_USERNAME=root
       - DB_PASSWORD=root
+
       - CACHE_DRIVER=redis
       - REDIS_CLIENT=phpredis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=null
-      - FILESYSTEM_DRIVER=local
-    depends_on:
-      - postgres-db
-      - redis
+      - REDIS_SCHEME=tcp
+      - REDIS_TIMEOUT=2
+      - REDIS_CACHE_HOST=redis
+      - REDIS_CACHE_PORT=6379
+
+      - FILESYSTEM_DRIVER=public
 
   postgres-db:
     image: postgres:16
     restart: unless-stopped
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+      - ../tests/dump/:/docker-entrypoint-initdb.d/
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=import_workflow
+      - POSTGRES_DB=a2d_laravel
     networks:
-      - import-net
-
+      - import-workflow-net
   redis:
     image: "redis:alpine"
     hostname: redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     networks:
-      - import-net
-
+      - import-workflow-net
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@a2d.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - CHECK_EMAIL_DELIVERABILITY=false
+      - ALLOW_SPECIAL_EMAIL_DOMAINS=[*]
+    depends_on:
+      - postgres-db
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+    networks:
+      - import-workflow-net
 networks:
-  import-net:
+  import-workflow-net:
     driver: bridge

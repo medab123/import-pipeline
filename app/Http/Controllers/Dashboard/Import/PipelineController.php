@@ -14,6 +14,7 @@ use App\Http\ViewModels\Dashboard\Import\ListPipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
+use Elaitech\Import\Models\ImportPipelineResult;
 use Elaitech\Import\Services\Jobs\ProcessImportPipelineJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -122,7 +123,7 @@ final class PipelineController extends Controller
 
     public function executions(ImportPipeline $pipeline, Request $request): Response
     {
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->input('per_page', 15);
         $paginated = $this->dashboardService->paginateExecutionsByPipeline($pipeline->id, $perPage);
 
         $executions = [];
@@ -205,7 +206,7 @@ final class PipelineController extends Controller
             return redirect()->route('dashboard.import.pipelines.executions', ['pipeline' => $pipeline->id]);
         }
 
-        $result = \Elaitech\Import\Models\ImportPipelineResult::where('execution_id', $execution)->first();
+        $result = ImportPipelineResult::where('execution_id', $execution)->first();
 
         return inertia('Dashboard/Import/Pipelines/ExecutionResults', [
             'pipeline' => new PipelineViewModel($pipeline),

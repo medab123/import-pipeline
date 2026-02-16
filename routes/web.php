@@ -1,11 +1,13 @@
 <?php
 
+use Elaitech\Import\Models\ImportPipelineResult;
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Foundation\Application;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    dd(ImportPipelineResult::all());
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
