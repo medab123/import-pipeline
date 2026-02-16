@@ -5,26 +5,10 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/import",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "./packages/data-mapper",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require": {
         "php": "^8.4",
-        "elaitech/data-mapper": "@dev",
-        "elaitech/import": "@dev",
+        "elaitech/data-mapper": "0.0.1",
+        "elaitech/import": "0.0.1",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/breeze": "^2.3",
         "laravel/fortify": "^1.34",

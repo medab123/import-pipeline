@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dbea68528c0927ee16bd4f982b1cec9e",
+    "content-hash": "43e4cff11e9355ee554b6dc7d73c024e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -663,11 +663,17 @@
         },
         {
             "name": "elaitech/data-mapper",
-            "version": "dev-master",
+            "version": "0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/medab123/data-mapper.git",
+                "reference": "fc62032af8312f46cf9e46381d8b88496e8678f1"
+            },
             "dist": {
-                "type": "path",
-                "url": "./packages/data-mapper",
-                "reference": "a70e8d21ad970daa0bed1ef30299002ee2c0f646"
+                "type": "zip",
+                "url": "https://api.github.com/repos/medab123/data-mapper/zipball/fc62032af8312f46cf9e46381d8b88496e8678f1",
+                "reference": "fc62032af8312f46cf9e46381d8b88496e8678f1",
+                "shasum": ""
             },
             "require": {
                 "illuminate/support": "^12.0",
@@ -692,11 +698,7 @@
                     "Elaitech\\DataMapper\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Elaitech\\DataMapper\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -707,18 +709,25 @@
                 }
             ],
             "description": "Elaitech DataMapper - A reusable data mapping and transformation component for Laravel.",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/medab123/data-mapper/issues",
+                "source": "https://github.com/medab123/data-mapper/tree/0.0.1"
+            },
+            "time": "2026-02-15T00:54:29+00:00"
         },
         {
             "name": "elaitech/import",
-            "version": "dev-master",
+            "version": "0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/medab123/import.git",
+                "reference": "768b887536864ff500ac62873423a803c493e386"
+            },
             "dist": {
-                "type": "path",
-                "url": "./packages/import",
-                "reference": "5380a7ca99815cbf4b42fbc6add8d328372e89ef"
+                "type": "zip",
+                "url": "https://api.github.com/repos/medab123/import/zipball/768b887536864ff500ac62873423a803c493e386",
+                "reference": "768b887536864ff500ac62873423a803c493e386",
+                "shasum": ""
             },
             "require": {
                 "illuminate/console": "^12.0",
@@ -748,18 +757,14 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Elaitech\\Import\\": "src/"
-                },
                 "files": [
                     "src/Helpers.php"
-                ]
-            },
-            "autoload-dev": {
+                ],
                 "psr-4": {
-                    "Elaitech\\Import\\Tests\\": "tests/"
+                    "Elaitech\\Import\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -770,10 +775,11 @@
                 }
             ],
             "description": "Elaitech Import Package - A comprehensive import workflow system for Laravel",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/medab123/import/issues",
+                "source": "https://github.com/medab123/import/tree/0.0.1"
+            },
+            "time": "2026-02-16T01:30:46+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -10322,10 +10328,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "elaitech/data-mapper": 20,
-        "elaitech/import": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
