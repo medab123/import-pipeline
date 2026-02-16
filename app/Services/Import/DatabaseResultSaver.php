@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Import;
 
-use Elaitech\Import\Models\ImportPipelineResult;
+use App\Models\ImportPipelineResult;
 use Elaitech\Import\Services\Core\Contracts\ResultSaverInterface;
 use Elaitech\Import\Services\Pipeline\DTOs\PipelinePassable;
 use Elaitech\Import\Services\Pipeline\DTOs\SaveResultData;

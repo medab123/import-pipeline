@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ImportPipelineResult;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineExecution;
-use Elaitech\Import\Models\ImportPipelineResult;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
