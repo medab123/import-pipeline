@@ -16,7 +16,17 @@ Route::middleware(['auth', 'organization'])
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         // Target Fields
-        Route::resource('target-fields', TargetFieldController::class);
+        // Specific routes MUST come before the resource route so that "export" and "import"
+        // are not interpreted as the {target_field} route parameter.
+        Route::get('target-fields/export', [TargetFieldController::class, 'export'])
+            ->name('target-fields.export');
+
+        Route::post('target-fields/import', [TargetFieldController::class, 'import'])
+            ->name('target-fields.import');
+
+        // Constrain the resource parameter so only numeric IDs match {target_field}
+        Route::resource('target-fields', TargetFieldController::class)
+            ->whereNumber('target_field');
 
         // API Tokens
         Route::resource('tokens', App\Http\Controllers\Dashboard\Organization\OrganizationTokenController::class)

@@ -37,7 +37,9 @@ import {
   Type,
   Eye,
   X,
-  Database
+  Database,
+  Download,
+  Upload
 } from 'lucide-vue-next'
 
 interface TargetField {
@@ -105,6 +107,50 @@ const confirmDelete = () => {
     })
 }
 
+// Export CSV
+const handleExport = () => {
+  window.location.href = route('dashboard.organization.target-fields.export')
+}
+
+// Import CSV
+const importDialogOpen = ref(false)
+const importFileInput = ref<HTMLInputElement | null>(null)
+const importFile = ref<File | null>(null)
+
+const openImportDialog = () => {
+  importDialogOpen.value = true
+}
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    importFile.value = file
+  }
+}
+
+const confirmImport = () => {
+  if (!importFile.value) return
+
+  const formData = new FormData()
+  formData.append('csv_file', importFile.value)
+
+  router.post(
+    route('dashboard.organization.target-fields.import'),
+    formData,
+    {
+      forceFormData: true,
+      onSuccess: () => {
+        importDialogOpen.value = false
+        importFile.value = null
+        if (importFileInput.value) {
+          importFileInput.value.value = ''
+        }
+      },
+    }
+  )
+}
+
 // Helpers
 const getTypeBadgeVariant = (type: string) => {
     switch (type) {
@@ -127,12 +173,22 @@ const getTypeBadgeVariant = (type: string) => {
       :description="`Manage data mapping fields for ${organizationName}`"
     >
       <template #actions>
-        <Button as-child>
-          <Link :href="route('dashboard.organization.target-fields.create')">
-            <Plus class="w-4 h-4 mr-2" />
-            Add Target Field
-          </Link>
-        </Button>
+        <div class="flex gap-2">
+          <Button variant="outline" @click="handleExport">
+            <Download class="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button variant="outline" @click="openImportDialog">
+            <Upload class="w-4 h-4 mr-2" />
+            Import CSV
+          </Button>
+          <Button as-child>
+            <Link :href="route('dashboard.organization.target-fields.create')">
+              <Plus class="w-4 h-4 mr-2" />
+              Add Target Field
+            </Link>
+          </Button>
+        </div>
       </template>
     </PageHeader>
 
@@ -255,6 +311,50 @@ const getTypeBadgeVariant = (type: string) => {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction @click="confirmDelete" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog v-model:open="importDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Import Target Fields from CSV</AlertDialogTitle>
+          <AlertDialogDescription>
+            Upload a CSV file to import target fields. The file should contain columns: 
+            <span class="font-mono text-xs">field</span>, 
+            <span class="font-mono text-xs">label</span>, 
+            <span class="font-mono text-xs">type</span>, 
+            <span class="font-mono text-xs">category</span> (optional), 
+            <span class="font-mono text-xs">description</span> (optional), 
+            <span class="font-mono text-xs">model</span> (optional).
+            <br><br>
+            Existing fields with the same field name will be updated.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div class="py-4">
+          <input
+            ref="importFileInput"
+            type="file"
+            accept=".csv,.txt"
+            @change="handleFileSelect"
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <p v-if="importFile" class="mt-2 text-sm text-muted-foreground">
+            Selected: {{ importFile.name }}
+          </p>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="() => { 
+            importFile.value = null
+            if (importFileInput.value) {
+              importFileInput.value.value = ''
+            }
+          }">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction @click="confirmImport" :disabled="!importFile">
+            Import
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
