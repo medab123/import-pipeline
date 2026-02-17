@@ -12,6 +12,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Spatie\Permission\Models\Role;
 
 class UsersTable
 {
@@ -36,6 +37,13 @@ class UsersTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('roles.name')
+                    ->label('Role')
+                    ->badge()
+                    ->separator(',')
+                    ->sortable()
+                    ->searchable(),
+
                 ToggleColumn::make('email_verified_at')
                     ->label('Verified')
                     ->sortable(),
@@ -54,6 +62,12 @@ class UsersTable
                 SelectFilter::make('organization_uuid')
                     ->label('Organization')
                     ->relationship('organization', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('roles')
+                    ->label('Role')
+                    ->relationship('roles', 'name')
                     ->searchable()
                     ->preload(),
             ])

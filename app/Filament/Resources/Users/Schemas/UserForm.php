@@ -11,6 +11,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserForm
 {
@@ -52,6 +53,18 @@ class UserForm
                             ->afterStateHydrated(function ($component, $state) {
                                 $component->state($state !== null);
                             }),
+
+                        Select::make('role')
+                            ->label('Role')
+                            ->options(function () {
+                                return Role::where('guard_name', 'web')
+                                    ->whereNotIn('name', ['Super Admin', 'Dev'])
+                                    ->pluck('name', 'name')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Select a role for this user'),
                     ]),
             ]);
     }
