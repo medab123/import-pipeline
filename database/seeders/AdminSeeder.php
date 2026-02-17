@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,12 @@ final class AdminSeeder extends Seeder
         if ($superAdminRole && ! $mohammed->hasRole('Dev')) {
             $mohammed->assignRole($devRole);
         }
+
+        // Create admin record for the user
+        Admin::updateOrCreate(
+            ['user_id' => $mohammed->id],
+            ['is_active' => true]
+        );
     }
 }
 

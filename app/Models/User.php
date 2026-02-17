@@ -56,4 +56,20 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Organization::class, 'organization_uuid', 'uuid');
     }
+
+    /**
+     * Get the admin record for this user.
+     */
+    public function admin(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Admin::class);
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->admin()->where('is_active', true)->exists();
+    }
 }
