@@ -15,13 +15,22 @@ final class OrganizationResourceController extends Controller
 {
     /**
      * List all pipelines for the authenticated organization.
+     * Only returns pipelines that the token has access to.
      */
     public function pipelines(Request $request): JsonResponse
     {
         $organization = app('organization');
+        $organizationToken = app('organization_token');
 
-        $pipelines = ImportPipeline::where('organization_uuid', $organization->uuid)
-            ->with(['executions' => function ($query) {
+        $query = ImportPipeline::where('organization_uuid', $organization->uuid);
+
+        // If token has specific pipelines assigned, filter by them
+        if ($organizationToken->pipelines()->count() > 0) {
+            $allowedPipelineIds = $organizationToken->pipelines()->pluck('pipeline_id')->toArray();
+            $query->whereIn('id', $allowedPipelineIds);
+        }
+
+        $pipelines = $query->with(['executions' => function ($query) {
                 $query->latest()->limit(1);
             }])
             ->paginate($request->input('per_page', 15));
@@ -43,11 +52,19 @@ final class OrganizationResourceController extends Controller
     public function pipeline(ImportPipeline $pipeline): JsonResponse
     {
         $organization = app('organization');
+        $organizationToken = app('organization_token');
 
         if ($pipeline->organization_uuid !== $organization->uuid) {
             return response()->json([
                 'message' => 'Pipeline not found.',
             ], 404);
+        }
+
+        // Check if token has access to this pipeline
+        if (! $organizationToken->canAccessPipeline($pipeline)) {
+            return response()->json([
+                'message' => 'Access denied. Token does not have permission to access this pipeline.',
+            ], 403);
         }
 
         return response()->json([
@@ -70,11 +87,19 @@ final class OrganizationResourceController extends Controller
     public function executions(ImportPipeline $pipeline, Request $request): JsonResponse
     {
         $organization = app('organization');
+        $organizationToken = app('organization_token');
 
         if ($pipeline->organization_uuid !== $organization->uuid) {
             return response()->json([
                 'message' => 'Pipeline not found.',
             ], 404);
+        }
+
+        // Check if token has access to this pipeline
+        if (! $organizationToken->canAccessPipeline($pipeline)) {
+            return response()->json([
+                'message' => 'Access denied. Token does not have permission to access this pipeline.',
+            ], 403);
         }
 
         $executions = ImportPipelineExecution::where('pipeline_id', $pipeline->id)
@@ -112,11 +137,19 @@ final class OrganizationResourceController extends Controller
     public function execution(ImportPipeline $pipeline, int $execution): JsonResponse
     {
         $organization = app('organization');
+        $organizationToken = app('organization_token');
 
         if ($pipeline->organization_uuid !== $organization->uuid) {
             return response()->json([
                 'message' => 'Pipeline not found.',
             ], 404);
+        }
+
+        // Check if token has access to this pipeline
+        if (! $organizationToken->canAccessPipeline($pipeline)) {
+            return response()->json([
+                'message' => 'Access denied. Token does not have permission to access this pipeline.',
+            ], 403);
         }
 
         $executionModel = ImportPipelineExecution::where('id', $execution)
@@ -154,11 +187,19 @@ final class OrganizationResourceController extends Controller
     public function executionResults(ImportPipeline $pipeline): JsonResponse
     {
         $organization = app('organization');
+        $organizationToken = app('organization_token');
 
         if ($pipeline->organization_uuid !== $organization->uuid) {
             return response()->json([
                 'message' => 'Pipeline not found.',
             ], 404);
+        }
+
+        // Check if token has access to this pipeline
+        if (! $organizationToken->canAccessPipeline($pipeline)) {
+            return response()->json([
+                'message' => 'Access denied. Token does not have permission to access this pipeline.',
+            ], 403);
         }
 
         $result = ImportPipelineResult::where('pipeline_id', $pipeline->id)
