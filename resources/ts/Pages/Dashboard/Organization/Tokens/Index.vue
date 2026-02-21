@@ -119,6 +119,7 @@ const submitCreate = () => {
 }
 
 const togglePipeline = (pipelineId: number) => {
+    console.log(pipelineId)
     const index = createForm.pipeline_ids.indexOf(pipelineId)
     if (index > -1) {
         createForm.pipeline_ids.splice(index, 1)
@@ -134,9 +135,9 @@ const isPipelineSelected = (pipelineId: number) => {
 const formatExpirationDate = (dateString?: string) => {
     if (!dateString) return 'Never'
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -236,7 +237,7 @@ const confirmDelete = () => {
                              </TableEmpty>
                              <TableRow v-for="token in tokens.data" :key="token.id">
                                 <TableCell class="font-medium">
-                                    <Link 
+                                    <Link
                                         :href="route('dashboard.organization.tokens.show', token.id)"
                                         class="flex items-center gap-2 hover:text-primary transition-colors"
                                     >
@@ -246,15 +247,15 @@ const confirmDelete = () => {
                                 </TableCell>
                                 <TableCell>
                                     <div class="flex flex-wrap gap-1">
-                                        <Badge 
-                                            v-if="token.has_all_pipelines_access" 
+                                        <Badge
+                                            v-if="token.has_all_pipelines_access"
                                             variant="secondary"
                                             class="text-xs"
                                         >
                                             All Pipelines
                                         </Badge>
                                         <template v-else-if="token.pipelines && token.pipelines.length > 0">
-                                            <Badge 
+                                            <Badge
                                                 v-for="pipeline in token.pipelines.slice(0, 2)"
                                                 :key="pipeline.id"
                                                 variant="outline"
@@ -262,7 +263,7 @@ const confirmDelete = () => {
                                             >
                                                 {{ pipeline.name }}
                                             </Badge>
-                                            <Badge 
+                                            <Badge
                                                 v-if="token.pipelines.length > 2"
                                                 variant="outline"
                                                 class="text-xs"
@@ -270,7 +271,7 @@ const confirmDelete = () => {
                                                 +{{ token.pipelines.length - 2 }} more
                                             </Badge>
                                         </template>
-                                        <Badge 
+                                        <Badge
                                             v-else
                                             variant="outline"
                                             class="text-xs"
@@ -281,7 +282,7 @@ const confirmDelete = () => {
                                 </TableCell>
                                 <TableCell>
                                     <div class="flex items-center gap-2">
-                                        <Badge 
+                                        <Badge
                                             v-if="token.is_expired"
                                             variant="destructive"
                                             class="text-xs"
@@ -289,7 +290,7 @@ const confirmDelete = () => {
                                             <XCircle class="w-3 h-3 mr-1" />
                                             Expired
                                         </Badge>
-                                        <Badge 
+                                        <Badge
                                             v-else-if="token.expires_at"
                                             variant="secondary"
                                             class="text-xs"
@@ -304,8 +305,8 @@ const confirmDelete = () => {
                                 <TableCell>{{ token.created_at }}</TableCell>
                                 <TableCell class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Button 
-                                            variant="ghost" 
+                                        <Button
+                                            variant="ghost"
                                             size="sm"
                                             as-child
                                         >
@@ -313,8 +314,8 @@ const confirmDelete = () => {
                                                 <Eye class="w-4 h-4 mr-2" /> View
                                             </Link>
                                         </Button>
-                                        <Button 
-                                            variant="ghost" 
+                                        <Button
+                                            variant="ghost"
                                             size="sm"
                                             as-child
                                         >
@@ -322,9 +323,9 @@ const confirmDelete = () => {
                                                 <Edit class="w-4 h-4 mr-2" /> Edit
                                             </Link>
                                         </Button>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             class="text-destructive hover:text-destructive hover:bg-destructive/10"
                                             @click="openDeleteDialog(token)"
                                         >
@@ -356,10 +357,10 @@ const confirmDelete = () => {
             <form @submit.prevent="submitCreate" class="space-y-4">
                 <div class="space-y-2">
                      <label for="name" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Token Name</label>
-                     <Input 
-                        id="name" 
-                        v-model="createForm.name" 
-                        placeholder="e.g. CI/CD Pipeline, External Importer" 
+                     <Input
+                        id="name"
+                        v-model="createForm.name"
+                        placeholder="e.g. CI/CD Pipeline, External Importer"
                         autofocus
                     />
                      <p v-if="createForm.errors.name" class="text-sm text-destructive">{{ createForm.errors.name }}</p>
@@ -380,7 +381,7 @@ const confirmDelete = () => {
                     </Select>
 
                     <div v-if="expirationType === 'date'" class="space-y-2">
-                        <Input 
+                        <Input
                             type="datetime-local"
                             v-model="createForm.expires_at"
                             :min="new Date().toISOString().slice(0, 16)"
@@ -389,7 +390,7 @@ const confirmDelete = () => {
                     </div>
 
                     <div v-if="expirationType === 'days'" class="space-y-2">
-                        <Input 
+                        <Input
                             type="number"
                             v-model.number="createForm.expires_in_days"
                             placeholder="Enter number of days (1-3650)"
@@ -407,17 +408,17 @@ const confirmDelete = () => {
                         Select specific pipelines this token can access. Leave empty to allow access to all pipelines.
                     </p>
                     <div v-if="availablePipelines && availablePipelines.length > 0" class="max-h-48 overflow-y-auto border rounded-md p-3 space-y-2">
-                        <div 
-                            v-for="pipeline in availablePipelines" 
+                        <div
+                            v-for="pipeline in availablePipelines"
                             :key="pipeline.id"
                             class="flex items-center space-x-2"
                         >
-                            <Checkbox 
+                            <Checkbox
                                 :id="`pipeline-${pipeline.id}`"
-                                :checked="isPipelineSelected(pipeline.id)"
-                                @update:checked="() => togglePipeline(pipeline.id)"
+                                :modelValue="isPipelineSelected(pipeline.id)"
+                                @update:modelValue="() => togglePipeline(pipeline.id)"
                             />
-                            <Label 
+                            <Label
                                 :for="`pipeline-${pipeline.id}`"
                                 class="text-sm font-normal cursor-pointer"
                             >
@@ -480,14 +481,14 @@ const confirmDelete = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke API Token?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to revoke <span class="font-semibold text-foreground">{{ tokenToDelete?.name }}</span>? 
+            Are you sure you want to revoke <span class="font-semibold text-foreground">{{ tokenToDelete?.name }}</span>?
             Any services using this token will lose access immediately. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            @click="confirmDelete" 
+          <AlertDialogAction
+            @click="confirmDelete"
             class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Revoke Token

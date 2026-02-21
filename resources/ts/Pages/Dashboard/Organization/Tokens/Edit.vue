@@ -39,7 +39,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const expirationType = ref<'none' | 'date' | 'days'>(
-  props.token.has_expiration 
+  props.token.has_expiration
     ? (props.token.expires_at ? 'date' : 'days')
     : 'none'
 )
@@ -128,10 +128,10 @@ const submitUpdate = () => {
               <Label for="name" class="text-sm font-medium leading-none">
                 Token Name
               </Label>
-              <Input 
-                id="name" 
-                v-model="editForm.name" 
-                placeholder="e.g. CI/CD Pipeline, External Importer" 
+              <Input
+                id="name"
+                v-model="editForm.name"
+                placeholder="e.g. CI/CD Pipeline, External Importer"
                 :class="{ 'border-destructive': editForm.errors.name }"
               />
               <p v-if="editForm.errors.name" class="text-sm text-destructive">
@@ -154,7 +154,7 @@ const submitUpdate = () => {
               </Select>
 
               <div v-if="expirationType === 'date'" class="space-y-2">
-                <Input 
+                <Input
                   type="datetime-local"
                   v-model="editForm.expires_at"
                   :min="new Date().toISOString().slice(0, 16)"
@@ -166,7 +166,7 @@ const submitUpdate = () => {
               </div>
 
               <div v-if="expirationType === 'days'" class="space-y-2">
-                <Input 
+                <Input
                   type="number"
                   v-model.number="editForm.expires_in_days"
                   placeholder="Enter number of days (1-3650)"
@@ -187,17 +187,17 @@ const submitUpdate = () => {
                 Select specific pipelines this token can access. Leave empty to allow access to all pipelines.
               </p>
               <div v-if="availablePipelines && availablePipelines.length > 0" class="max-h-64 overflow-y-auto border rounded-md p-3 space-y-2">
-                <div 
-                  v-for="pipeline in availablePipelines" 
+                <div
+                  v-for="pipeline in availablePipelines"
                   :key="pipeline.id"
                   class="flex items-center space-x-2"
                 >
-                  <Checkbox 
+                  <Checkbox
                     :id="`pipeline-${pipeline.id}`"
-                    :checked="isPipelineSelected(pipeline.id)"
-                    @update:checked="() => togglePipeline(pipeline.id)"
+                    :modelValue="isPipelineSelected(pipeline.id)"
+                    @update:modelValue="() => togglePipeline(pipeline.id)"
                   />
-                  <Label 
+                  <Label
                     :for="`pipeline-${pipeline.id}`"
                     class="text-sm font-normal cursor-pointer"
                   >
@@ -215,17 +215,17 @@ const submitUpdate = () => {
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end gap-3 pt-4 border-t">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 as-child
               >
                 <Link :href="route('dashboard.organization.tokens.show', token.id)">
                   Cancel
                 </Link>
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 :disabled="editForm.processing"
               >
                 <Save class="w-4 h-4 mr-2" />
@@ -243,8 +243,8 @@ const submitUpdate = () => {
           <div class="text-sm text-blue-800 dark:text-blue-300">
             <p class="font-medium mb-1">Note</p>
             <p>
-              You can update the token name, expiration date, and pipeline access. 
-              The token value itself cannot be changed for security reasons. 
+              You can update the token name, expiration date, and pipeline access.
+              The token value itself cannot be changed for security reasons.
               If you need a new token value, you must revoke this token and create a new one.
             </p>
           </div>

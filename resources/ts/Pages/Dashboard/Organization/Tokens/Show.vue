@@ -60,9 +60,9 @@ const deleteDialogOpen = ref(false)
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return 'Never'
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
@@ -99,9 +99,9 @@ const confirmDelete = () => {
             <Edit class="w-4 h-4 mr-2" /> Edit Token
           </Link>
         </Button>
-        <Button 
-          variant="destructive" 
-          size="sm" 
+        <Button
+          variant="destructive"
+          size="sm"
           @click="deleteDialogOpen = true"
         >
           <Trash2 class="w-4 h-4 mr-2" /> Revoke Token
@@ -121,7 +121,7 @@ const confirmDelete = () => {
         </CardHeader>
         <CardContent>
           <div class="flex items-center gap-4">
-            <Badge 
+            <Badge
               v-if="token.is_expired"
               variant="destructive"
               class="text-sm px-3 py-1"
@@ -129,7 +129,7 @@ const confirmDelete = () => {
               <XCircle class="w-4 h-4 mr-2" />
               Expired
             </Badge>
-            <Badge 
+            <Badge
               v-else-if="token.is_valid"
               variant="default"
               class="text-sm px-3 py-1 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
@@ -137,7 +137,7 @@ const confirmDelete = () => {
               <CheckCircle2 class="w-4 h-4 mr-2" />
               Active
             </Badge>
-            <Badge 
+            <Badge
               v-else
               variant="secondary"
               class="text-sm px-3 py-1"
@@ -186,14 +186,14 @@ const confirmDelete = () => {
                 Expires At
               </h4>
               <div class="text-sm">
-                <Badge 
+                <Badge
                   v-if="token.expires_at && token.is_expired"
                   variant="destructive"
                   class="text-xs"
                 >
                   {{ formatDate(token.expires_at) }}
                 </Badge>
-                <Badge 
+                <Badge
                   v-else-if="token.expires_at"
                   variant="secondary"
                   class="text-xs"
@@ -238,8 +238,8 @@ const confirmDelete = () => {
               </Badge>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div 
-                v-for="pipeline in token.pipelines" 
+              <div
+                v-for="pipeline in token.pipelines"
                 :key="pipeline.id"
                 class="flex items-center gap-2 p-3 border rounded-md hover:bg-muted/50 transition-colors"
               >
@@ -266,8 +266,8 @@ const confirmDelete = () => {
           <div class="text-sm text-blue-800 dark:text-blue-300">
             <p class="font-medium mb-1">Security Reminder</p>
             <p>
-              API tokens provide full access to your organization's resources. 
-              Keep them secure and never share them publicly. If you suspect a token 
+              API tokens provide full access to your organization's resources.
+              Keep them secure and never share them publicly. If you suspect a token
               has been compromised, revoke it immediately.
             </p>
           </div>
@@ -281,14 +281,14 @@ const confirmDelete = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke API Token?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to revoke <span class="font-semibold text-foreground">{{ token.name }}</span>? 
+            Are you sure you want to revoke <span class="font-semibold text-foreground">{{ token.name }}</span>?
             Any services using this token will lose access immediately. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            @click="confirmDelete" 
+          <AlertDialogAction
+            @click="confirmDelete"
             class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Revoke Token

@@ -229,7 +229,7 @@ final class OrganizationTokenController extends Controller
                 ->count();
 
             if ($validPipelineCount !== count($pipelineIds)) {
-                return redirect()->back()
+                return redirect()->back(303)
                     ->withErrors(['pipeline_ids' => 'One or more selected pipelines do not belong to this organization.'])
                     ->withInput();
             }
@@ -249,7 +249,7 @@ final class OrganizationTokenController extends Controller
             $organizationToken->pipelines()->detach();
         }
 
-        return redirect()->route('dashboard.organization.tokens.show', $organizationToken->id)
+        return redirect()->route('dashboard.organization.tokens.show', $organizationToken->id,status: 303)
             ->with('toastNotifications', [[
                 'title' => 'Token Updated',
                 'message' => 'The token has been successfully updated.',
