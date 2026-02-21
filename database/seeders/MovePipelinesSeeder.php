@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\ImportPipelineResult;
 use App\Models\Organization;
 use App\Models\OrganizationToken;
 use App\Models\User;
 use Elaitech\Import\Models\ImportPipeline;
+use Elaitech\Import\Models\ImportPipelineConfig;
+use Elaitech\Import\Models\ImportPipelineExecution;
+use Elaitech\Import\Models\ImportPipelineLog;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +46,22 @@ final class MovePipelinesSeeder extends Seeder
                 }
                 $organizationTokens = OrganizationToken::where('organization_uuid', $pipelineOrganization->uuid)->get();
                 $pipeline->update(['organization_uuid' => $pipelineOrganization->uuid]);
+
+                ImportPipelineConfig::where('pipeline_id', $pipeline->id)
+                    ->update(['organization_uuid' => $defaultOrganization->uuid]);
+
+                // Update all related executions
+                ImportPipelineExecution::where('pipeline_id', $pipeline->id)
+                    ->update(['organization_uuid' => $defaultOrganization->uuid]);
+
+                // Update all related logs
+                ImportPipelineLog::where('pipeline_id', $pipeline->id)
+                    ->update(['organization_uuid' => $defaultOrganization->uuid]);
+
+                // Update results (has both pipeline_id and organization_uuid)
+                \App\Models\ImportPipelineResult::where('pipeline_id', $pipeline->id)
+                    ->update(['organization_uuid' => $defaultOrganization->uuid]);
+
                 foreach ($organizationTokens as $token) {
                     $token->update(['organization_uuid' => $defaultOrganization->uuid]);
                     if (!$token->pipelines()->where('pipeline_id', $pipeline->id)->exists()) {
