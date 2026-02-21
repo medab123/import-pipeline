@@ -45,21 +45,31 @@ final class MovePipelinesSeeder extends Seeder
                     continue;
                 }
                 $organizationTokens = OrganizationToken::where('organization_uuid', $pipelineOrganization->uuid)->get();
-                $pipeline->update(['organization_uuid' => $pipelineOrganization->uuid]);
+                
+                // Move pipeline to default organization
+                $pipeline->update(['organization_uuid' => $defaultOrganization->uuid]);
 
+                // Update all related configs
                 ImportPipelineConfig::where('pipeline_id', $pipeline->id)
                     ->update(['organization_uuid' => $defaultOrganization->uuid]);
+
+                // Get all executions for this pipeline
+                $executionIds = ImportPipelineExecution::where('pipeline_id', $pipeline->id)
+                    ->pluck('id')
+                    ->toArray();
 
                 // Update all related executions
                 ImportPipelineExecution::where('pipeline_id', $pipeline->id)
                     ->update(['organization_uuid' => $defaultOrganization->uuid]);
 
-                // Update all related logs
-                ImportPipelineLog::where('pipeline_id', $pipeline->id)
-                    ->update(['organization_uuid' => $defaultOrganization->uuid]);
+                // Update all related logs (logs are related to executions, not pipelines)
+                if (!empty($executionIds)) {
+                    ImportPipelineLog::whereIn('execution_id', $executionIds)
+                        ->update(['organization_uuid' => $defaultOrganization->uuid]);
+                }
 
                 // Update results (has both pipeline_id and organization_uuid)
-                \App\Models\ImportPipelineResult::where('pipeline_id', $pipeline->id)
+                ImportPipelineResult::where('pipeline_id', $pipeline->id)
                     ->update(['organization_uuid' => $defaultOrganization->uuid]);
 
                 foreach ($organizationTokens as $token) {
