@@ -30,5 +30,5 @@ Route::middleware(['auth', 'organization'])
 
         // API Tokens
         Route::resource('tokens', App\Http\Controllers\Dashboard\Organization\OrganizationTokenController::class)
-            ->only(['index', 'store', 'destroy']);
+            ->only(['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']);
     });
