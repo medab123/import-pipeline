@@ -33,18 +33,15 @@ final class MovePipelinesSeeder extends Seeder
                 $pipelineOrganization = Organization::where('uuid', $pipeline->organization_uuid)->first();
                 if (!$pipelineOrganization) {
                     $this->command->warn("Pipeline {$pipeline->id} has invalid organization_uuid: {$pipeline->organization_uuid}");
-                    $pipeline->organization_uuid = $defaultOrganization->uuid;
-                    $pipeline->save();
+                    $pipeline->update(['organization_uuid' => $defaultOrganization->uuid]);
                     continue;
                 }
                 if (in_array($pipelineOrganization->uuid, $processedOrganizations)) {
-                    $pipeline->organization_uuid = $defaultOrganization->uuid;
-                    $pipeline->save();
+                    $pipeline->update(['organization_uuid' => $defaultOrganization->uuid]);
                     continue;
                 }
                 $organizationTokens = OrganizationToken::where('organization_uuid', $pipelineOrganization->uuid)->get();
-                $pipeline->organization_uuid = $defaultOrganization->uuid;
-                $pipeline->save();
+                $pipeline->update(['organization_uuid' => $pipelineOrganization->uuid]);
                 foreach ($organizationTokens as $token) {
                     $token->update(['organization_uuid' => $defaultOrganization->uuid]);
                     if (!$token->pipelines()->where('pipeline_id', $pipeline->id)->exists()) {
