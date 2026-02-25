@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'organization-auth' => \App\Http\Middleware\AuthenticateOrganizationToken::class,
         ]);
     })
+    ->withCommands([
+        \App\Console\Import\ProcessScheduledPipelines::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
