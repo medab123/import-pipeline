@@ -57,8 +57,12 @@ class AppServiceProvider extends ServiceProvider
     private function registerTenantAutoAssignment(): void
     {
         foreach ($this->tenantModels as $modelClass) {
+
             $modelClass::creating(function ($model) {
-                if (auth()->check() && ! $model->organization_uuid) {
+                if ($model instanceof ImportPipelineExecution) {
+                    $model->organization_uuid = ImportPipeline::find($model->pipeline_id)->organization_uuid;
+                }
+                if (auth()->check() && !$model->organization_uuid) {
                     $model->organization_uuid = auth()->user()->organization_uuid;
                 }
             });
