@@ -58,4 +58,7 @@ Route::middleware(['auth', 'organization'])->prefix('dashboard/import')->name('d
     // Test Data Mapper
     Route::post('/pipelines/{pipeline}/mapper/test', TestDataMapperController::class)->name('pipelines.mapper.test');
 
+    // Generate Mappings with AI
+    Route::post('/pipelines/{pipeline}/mapper/generate', [StepperPipelineController::class, 'generateMappings'])->name('pipelines.mapper.generate');
+
 });

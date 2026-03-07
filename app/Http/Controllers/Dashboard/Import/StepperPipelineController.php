@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\Import;
 
+use App\Ai\Agents\ImportMapping;
 use Elaitech\Import\Enums\ImportPipelineFrequency;
 use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\ToastNotificationVariant;
@@ -11,6 +12,9 @@ use App\Factories\ImportPipeline\ImportPipelineStepFactory;
 use App\Http\Controllers\Controller;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\ImportDashboard\ImportDashboardService;
+use Elaitech\Import\Services\Pipeline\Services\FeedKeysService;
+use Elaitech\Import\Services\Pipeline\Services\TargetFieldsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -30,11 +34,13 @@ final class StepperPipelineController extends Controller
     public function create(): RedirectResponse
     {
         try {
+            /** @var int|null $userId */
+            $userId = auth()->id();
             $pipeline = $this->dashboardService->createPipeline([
                 'name' => 'New Pipeline',
                 'target_id' => 1,
                 'frequency' => ImportPipelineFrequency::DAILY->value,
-                'created_by' => auth()->id(),
+                'created_by' => $userId,
             ]);
 
             return redirect()->route(
@@ -168,6 +174,64 @@ final class StepperPipelineController extends Controller
         }
 
         return redirect($previousStepRoute);
+    }
+
+    /**
+     * Generate field mappings using AI agent.
+     */
+    public function generateMappings(ImportPipeline $pipeline): JsonResponse
+    {
+        try {
+            $feedKeysService = app(FeedKeysService::class);
+            $targetFieldsService = app(TargetFieldsService::class);
+
+            // Get source fields (feed keys)
+            $sourceFields = $feedKeysService->getFeedKeys($pipeline);
+            // Get target fields
+            $targetFields = $targetFieldsService->getTargetFields();
+
+            if (empty($sourceFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No source fields available. Please configure the feed reader step first.',
+                ], 400);
+            }
+
+            if (empty($targetFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No target fields available. Please configure target fields first.',
+                ], 400);
+            }
+
+            // Create and configure the AI agent
+            $agent = ImportMapping::make();
+            $agent->setSourceFields($sourceFields);
+            $agent->setTargetFields($targetFields);
+
+            // Generate mappings
+            $response = $agent->prompt('');
+            // The Laravel AI package returns an AgentResponse with toArray() method
+            /** @var array{field_mappings: array<int, array<string, mixed>>, message: string} $result */
+            $result = method_exists($response, 'toArray') ? $response->toArray() : (array) $response;
+
+            // Transform the AI response to match the expected format
+            $fieldMappings = $result['field_mappings'];
+            
+            return response()->json([
+                'success' => true,
+                'field_mappings' => $fieldMappings,
+                'message' => $result['message'] ?? 'Mappings generated successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate mappings: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

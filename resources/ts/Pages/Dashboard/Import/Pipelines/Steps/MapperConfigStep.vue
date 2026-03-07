@@ -8,10 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Plus, Trash2, Wand2, ChevronDown, X } from 'lucide-vue-next'
+import { Plus, Trash2, Wand2, ChevronDown, X, Sparkles, MessageSquare } from 'lucide-vue-next'
 import type { MapperConfigStepViewModel } from '@/types/generated'
 import { useTestDataMapper } from '@/composables/useTestDataMapper'
 import SearchableSelect from '@/components/SearchableSelect.vue'
+import { route } from 'ziggy-js'
+import { toast } from 'vue-sonner'
+import { marked } from 'marked'
 
 // Define the structure of feed keys with unique values
 interface FeedKey {
@@ -45,6 +48,13 @@ const expandedMappings = ref<boolean[]>(
 
 // Track test result collapsible state
 const isTestResultOpen = ref(true)
+
+// Track AI generation loading state
+const isGenerating = ref(false)
+
+// Track AI generation message
+const aiMessage = ref<string | null>(null)
+const isAiMessageOpen = ref(false)
 
 // Test data mapper functionality
 const { isTesting, testDataMapper: testDataMapperFn } = useTestDataMapper()
@@ -165,6 +175,23 @@ const getValueMappingLabel = (value: string): string => {
   return value || ''
 }
 
+// Configure marked for safe rendering
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+// Convert markdown to HTML
+const renderMarkdown = (markdown: string): string => {
+  if (!markdown) return ''
+  try {
+    return marked.parse(markdown) as string
+  } catch (error) {
+    console.error('Error parsing markdown:', error)
+    return markdown // Return plain text if parsing fails
+  }
+}
+
 // Get available source fields for a specific mapping rule (excluding already mapped fields)
 const getAvailableSourceFields = (currentIndex: number): FeedKey[] => {
   // Get all source fields that are already mapped in other rules
@@ -217,6 +244,62 @@ const saveAndNext = () => {
     onSuccess: () => emit('saveAndNext')
   })
 }
+
+// Generate mappings using AI
+const generateMappingsWithAI = async () => {
+  if (isGenerating.value) {
+    return
+  }
+
+  isGenerating.value = true
+
+  try {
+    const response = await fetch(route('dashboard.import.pipelines.mapper.generate', {
+      pipeline: props.pipeline.id
+    }), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        'Accept': 'application/json',
+      },
+    })
+
+    const data = await response.json()
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to generate mappings')
+    }
+
+    // Replace existing mappings with AI-generated ones
+    if (data.field_mappings && data.field_mappings.length > 0) {
+      form.field_mappings = data.field_mappings
+      // Expand all new mappings
+      expandedMappings.value = data.field_mappings.map(() => true)
+      
+      // Store AI message for display
+      aiMessage.value = data.message || null
+      isAiMessageOpen.value = true
+      
+      toast.success('Mappings Generated', {
+        description: `Successfully generated ${data.field_mappings.length} field mapping${data.field_mappings.length !== 1 ? 's' : ''} using AI.`,
+      })
+    } else {
+      aiMessage.value = data.message || null
+      isAiMessageOpen.value = true
+      toast.warning('No Mappings Generated', {
+        description: 'AI was unable to generate any mappings. Please try adding mappings manually.',
+      })
+    }
+  } catch (error: any) {
+    console.error('Error generating mappings:', error)
+    toast.error('Generation Failed', {
+      description: error.message || 'Failed to generate mappings. Please try again.',
+    })
+  } finally {
+    isGenerating.value = false
+  }
+}
 </script>
 
 <template>
@@ -232,10 +315,23 @@ const saveAndNext = () => {
           <h2 class="text-2xl font-bold tracking-tight">Mapper Configuration</h2>
           <p class="text-sm text-muted-foreground">Map source fields to target fields and apply transformations</p>
         </div>
-        <Button @click="addMapping" variant="outline" size="lg" class="flex items-center gap-2 w-full sm:w-auto">
-          <Plus class="h-4 w-4" />
-          Add Mapping
-        </Button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button 
+            @click="generateMappingsWithAI" 
+            variant="default" 
+            size="lg" 
+            class="flex items-center gap-2 w-full sm:w-auto"
+            :disabled="isGenerating || form.processing"
+          >
+            <Sparkles class="h-4 w-4" :class="{ 'animate-spin': isGenerating }" />
+            <span v-if="isGenerating">Generating...</span>
+            <span v-else>Generate with AI</span>
+          </Button>
+          <Button @click="addMapping" variant="outline" size="lg" class="flex items-center gap-2 w-full sm:w-auto">
+            <Plus class="h-4 w-4" />
+            Add Mapping
+          </Button>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -244,11 +340,23 @@ const saveAndNext = () => {
           <Wand2 class="h-8 w-8 opacity-50" />
         </div>
         <p class="text-lg font-semibold mb-2">No mappings configured</p>
-        <p class="text-sm max-w-md mx-auto mb-6">Add mappings to transform your data from source to target format</p>
-        <Button @click="addMapping" variant="outline" size="lg">
-          <Plus class="h-4 w-4 mr-2" />
-          Add Your First Mapping
-        </Button>
+        <p class="text-sm max-w-md mx-auto mb-6">Add mappings to transform your data from source to target format, or use AI to generate them automatically</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button 
+            @click="generateMappingsWithAI" 
+            variant="default" 
+            size="lg"
+            :disabled="isGenerating || form.processing"
+          >
+            <Sparkles class="h-4 w-4 mr-2" :class="{ 'animate-spin': isGenerating }" />
+            <span v-if="isGenerating">Generating...</span>
+            <span v-else>Generate with AI</span>
+          </Button>
+          <Button @click="addMapping" variant="outline" size="lg">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Your First Mapping
+          </Button>
+        </div>
       </div>
 
       <!-- Mappings List -->
@@ -492,6 +600,39 @@ const saveAndNext = () => {
           </Button>
         </div>
       </div>
+
+      <!-- AI Generation Message Section -->
+      <Collapsible v-if="aiMessage" v-model:open="isAiMessageOpen" class="mt-8">
+        <Card class="border-primary/20 bg-primary/5">
+          <CardHeader class="pb-3">
+            <CollapsibleTrigger as-child>
+              <div class="flex items-center justify-between cursor-pointer hover:bg-muted/50 -mx-4 px-4 py-2 rounded-md transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="p-2 rounded-md bg-primary/10">
+                    <MessageSquare class="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle class="text-base">AI Generation Explanation</CardTitle>
+                    <p class="text-sm text-muted-foreground mt-0.5">View detailed explanation of the generated mappings</p>
+                  </div>
+                </div>
+                <ChevronDown 
+                  class="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                  :class="{ 'rotate-180': isAiMessageOpen }"
+                />
+              </div>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
+              <div 
+                class="prose prose-sm dark:prose-invert max-w-none text-sm markdown-content [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_li]:my-1 [&_p]:my-2 [&_strong]:font-semibold [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-md [&_pre]:overflow-x-auto"
+                v-html="renderMarkdown(aiMessage || '')"
+              ></div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       <!-- Test Data Mapper Section -->
       <div v-if="form.field_mappings.length > 0" class="mt-8 p-5 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
