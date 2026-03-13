@@ -36,3 +36,4 @@ Route::get('/dashboard', function () {
 include __DIR__ . '/import-dashboard.php';
 include __DIR__ . '/product-dashboard.php';
 include __DIR__ . '/organization-dashboard.php';
+include __DIR__ . '/dealer-dashboard.php';

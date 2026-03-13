@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Dealer;
 use App\Models\Organization;
+use App\Models\PaymentTransaction;
+use App\Models\Scrap;
+use App\Policies\DealerPolicy;
 use App\Policies\ImportPipelinePolicy;
+use App\Policies\PaymentTransactionPolicy;
+use App\Policies\ScrapPolicy;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
 use Elaitech\Import\Models\ImportPipelineExecution;
@@ -36,9 +42,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.
@@ -62,7 +66,7 @@ class AppServiceProvider extends ServiceProvider
                 if ($model instanceof ImportPipelineExecution) {
                     $model->organization_uuid = ImportPipeline::find($model->pipeline_id)->organization_uuid;
                 }
-                if (auth()->check() && !$model->organization_uuid) {
+                if (auth()->check() && ! $model->organization_uuid) {
                     $model->organization_uuid = auth()->user()->organization_uuid;
                 }
             });
@@ -78,7 +82,7 @@ class AppServiceProvider extends ServiceProvider
             $modelClass::addGlobalScope('organization', function (Builder $query) {
                 if (auth()->check()) {
                     $query->where(
-                        $query->getModel()->getTable() . '.organization_uuid',
+                        $query->getModel()->getTable().'.organization_uuid',
                         auth()->user()->organization_uuid
                     );
                 }
@@ -93,6 +97,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(ImportPipeline::class, ImportPipelinePolicy::class);
         Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
+        Gate::policy(Dealer::class, DealerPolicy::class);
+        Gate::policy(PaymentTransaction::class, PaymentTransactionPolicy::class);
+        Gate::policy(Scrap::class, ScrapPolicy::class);
     }
 
     /**
@@ -126,4 +133,3 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 }
-

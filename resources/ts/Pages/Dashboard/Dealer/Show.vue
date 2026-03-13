@@ -1,0 +1,298 @@
+<script setup lang="ts">
+import { Head, Link, router } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
+import { ref } from 'vue'
+import Default from "@/components/Layoute/Default.vue"
+import { PageHeader } from '@/components/ui/page-header'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableEmpty } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  ExternalLink,
+} from 'lucide-vue-next'
+
+interface Transaction {
+  id: number
+  type: string
+  amount: string
+  status: string
+  payment_method: string | null
+  reference: string | null
+  paid_at: string | null
+  formatted_paid_at: string | null
+  created_at: string
+}
+
+interface ScrapItem {
+  id: number
+  ftp_file_path: string
+  provider: string
+  created_at: string
+  formatted_created_at: string
+}
+
+interface DealerData {
+  id: number
+  name: string
+  status: string
+  notes: string | null
+  postingAddress: string | null
+  websiteUrl: string | null
+  fbmpAppAccessToken: string | null
+  fbmpAppUrl: string | null
+  paymentPeriod: string
+  formattedCreatedAt: string
+  formattedUpdatedAt: string
+}
+
+const props = defineProps<{
+  dealer: DealerData
+  recentTransactions: Transaction[]
+  scraps: ScrapItem[]
+}>()
+
+const deleteDialogOpen = ref(false)
+
+const confirmDelete = () => {
+  router.delete(route('dashboard.dealers.destroy', props.dealer.id), {
+    onSuccess: () => {
+      deleteDialogOpen.value = false
+    }
+  })
+}
+
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case 'active': return 'default'
+    case 'completed': return 'default'
+    case 'pending': return 'secondary'
+    case 'failed': return 'destructive'
+    case 'refunded': return 'outline'
+    default: return 'secondary'
+  }
+}
+</script>
+
+<template>
+  <Head :title="dealer.name" />
+
+  <Default>
+    <PageHeader
+      :title="dealer.name"
+      description="Dealer details and transaction history."
+    >
+      <template #actions>
+        <Button variant="outline" size="sm" as-child>
+          <Link :href="route('dashboard.dealers.index')">
+            <ArrowLeft class="w-4 h-4 mr-2" /> Back
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" as-child>
+          <Link :href="route('dashboard.dealers.edit', dealer.id)">
+            <Edit class="w-4 h-4 mr-2" /> Edit
+          </Link>
+        </Button>
+        <Button variant="destructive" size="sm" @click="deleteDialogOpen = true">
+          <Trash2 class="w-4 h-4 mr-2" /> Delete
+        </Button>
+      </template>
+    </PageHeader>
+
+    <div class="w-full space-y-6">
+      <!-- Dealer Information -->
+      <Card>
+        <CardHeader>
+          <CardTitle>Dealer Information</CardTitle>
+          <CardDescription>Details and configuration for this dealer.</CardDescription>
+        </CardHeader>
+        <CardContent class="grid gap-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">Name</h4>
+              <div class="font-medium">{{ dealer.name }}</div>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">Status</h4>
+              <Badge :variant="getStatusVariant(dealer.status)">{{ dealer.status }}</Badge>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">Payment Period</h4>
+              <Badge variant="outline">{{ dealer.paymentPeriod }}</Badge>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">Posting Address</h4>
+              <div v-if="dealer.postingAddress">{{ dealer.postingAddress }}</div>
+              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">Website</h4>
+              <a v-if="dealer.websiteUrl" :href="dealer.websiteUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                {{ dealer.websiteUrl }}
+                <ExternalLink class="w-3 h-3" />
+              </a>
+              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">FBMP App URL</h4>
+              <a v-if="dealer.fbmpAppUrl" :href="dealer.fbmpAppUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                {{ dealer.fbmpAppUrl }}
+                <ExternalLink class="w-3 h-3" />
+              </a>
+              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">FBMP Access Token</h4>
+              <div v-if="dealer.fbmpAppAccessToken" class="font-mono text-sm truncate max-w-xs">{{ dealer.fbmpAppAccessToken }}</div>
+              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <h4 class="text-sm font-medium text-muted-foreground">Notes</h4>
+            <p v-if="dealer.notes" class="text-sm whitespace-pre-wrap">{{ dealer.notes }}</p>
+            <div v-else class="text-muted-foreground text-sm italic">No notes.</div>
+          </div>
+        </CardContent>
+        <CardFooter class="text-xs text-muted-foreground border-t pt-4 flex justify-between">
+          <span>Created: {{ dealer.formattedCreatedAt }}</span>
+          <span>Last Updated: {{ dealer.formattedUpdatedAt }}</span>
+        </CardFooter>
+      </Card>
+
+      <!-- Recent Transactions -->
+      <Card>
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>Latest payment transactions for this dealer.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" as-child>
+              <Link :href="route('dashboard.payment-transactions.create')">
+                Add Transaction
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div class="overflow-x-auto rounded-lg border bg-background">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Paid At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableEmpty v-if="recentTransactions.length === 0" :colspan="6">
+                  <div class="text-center py-6">
+                    <p class="text-muted-foreground text-sm">No transactions yet.</p>
+                  </div>
+                </TableEmpty>
+                <TableRow v-for="tx in recentTransactions" :key="tx.id">
+                  <TableCell>
+                    <Badge variant="outline">{{ tx.type }}</Badge>
+                  </TableCell>
+                  <TableCell class="font-medium">${{ tx.amount }}</TableCell>
+                  <TableCell>
+                    <Badge :variant="getStatusVariant(tx.status)">{{ tx.status }}</Badge>
+                  </TableCell>
+                  <TableCell>{{ tx.payment_method || '-' }}</TableCell>
+                  <TableCell class="font-mono text-sm">{{ tx.reference || '-' }}</TableCell>
+                  <TableCell>{{ tx.formatted_paid_at || '-' }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Scrap Sources -->
+      <Card>
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle>Scrap Sources</CardTitle>
+              <CardDescription>FTP scrap sources linked to this dealer.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" as-child>
+              <Link :href="route('dashboard.scraps.create')">
+                Add Scrap Source
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div class="overflow-x-auto rounded-lg border bg-background">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>FTP File Path</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableEmpty v-if="scraps.length === 0" :colspan="3">
+                  <div class="text-center py-6">
+                    <p class="text-muted-foreground text-sm">No scrap sources yet.</p>
+                  </div>
+                </TableEmpty>
+                <TableRow v-for="scrap in scraps" :key="scrap.id">
+                  <TableCell class="font-medium">{{ scrap.provider }}</TableCell>
+                  <TableCell class="font-mono text-sm">{{ scrap.ftp_file_path }}</TableCell>
+                  <TableCell>{{ scrap.formatted_created_at }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <AlertDialog v-model:open="deleteDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Dealer?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <span class="font-semibold">{{ dealer.name }}</span>?
+            This will also delete all related transactions and scrap sources. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction @click="confirmDelete" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Delete Dealer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </Default>
+</template>

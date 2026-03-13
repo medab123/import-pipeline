@@ -8,6 +8,9 @@ import {
     Users,
     Activity,
     Settings,
+    Store,
+    CreditCard,
+    HardDrive,
 } from "lucide-vue-next"
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
@@ -74,6 +77,28 @@ const data = computed(() => {
             ],
         },
     ]
+
+    // Dealers section
+    navMain.push({
+        title: "Dealers",
+        url: route('dashboard.dealers.index'),
+        icon: Store,
+        isActive: route().current()?.startsWith('dashboard.dealers') ?? false,
+        items: [
+            {
+                title: "All Dealers",
+                url: route('dashboard.dealers.index'),
+            },
+            {
+                title: "Transactions",
+                url: route('dashboard.payment-transactions.index'),
+            },
+            {
+                title: "Scrap Sources",
+                url: route('dashboard.scraps.index'),
+            },
+        ],
+    })
 
     if (can('manage users')) {
         navMain.push({
