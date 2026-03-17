@@ -33,7 +33,9 @@ class BasicInfoStep extends AbstractImportPipelineStep
             'updated_by' => auth()->id(),
         ];
 
-        $pipeline->update($updateData);
+        // forceFill bypasses $fillable so vendor-protected fields like
+        // `token` and `organization_uuid` are always persisted correctly.
+        $pipeline->forceFill($updateData)->save();
 
         return $pipeline->fresh();
     }
