@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\ViewModels\Dashboard\Import;
 
-use App\Http\ViewModels\CompanyViewModel;
-use Elaitech\Import\Models\ImportPipeline;
 use Carbon\Carbon;
+use Elaitech\Import\Models\ImportPipeline;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\ViewModels\ViewModel;
 
@@ -110,6 +109,11 @@ final class PipelineViewModel extends ViewModel
     public function formattedNextExecutionAt(): ?string
     {
         return $this->pipeline->next_execution_at?->format('Y-m-d H:i:s');
+    }
+
+    public function token(): ?string
+    {
+        return $this->pipeline->token;
     }
 
     public function config()

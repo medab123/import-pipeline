@@ -49,4 +49,24 @@ class Dealer extends Model
     {
         return $this->hasMany(Scrap::class);
     }
+
+    /**
+     * Automatically set status to active when dealer has both a scrap source
+     * and an FBMP token, otherwise revert to pending.
+     */
+    public function resolveStatus(): void
+    {
+        $hasScrapSource = $this->scraps()->exists();
+        $hasFbmpToken = ! empty($this->fbmp_app_access_token);
+
+        if ($hasScrapSource && $hasFbmpToken) {
+            if ($this->status === DealerStatus::Pending) {
+                $this->updateQuietly(['status' => DealerStatus::Active->value]);
+            }
+        } else {
+            if ($this->status !== DealerStatus::Pending) {
+                $this->updateQuietly(['status' => DealerStatus::Pending->value]);
+            }
+        }
+    }
 }

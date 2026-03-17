@@ -23,7 +23,11 @@ import {
   Edit,
   Trash2,
   ExternalLink,
+  Copy,
+  Check,
+  GitBranch,
 } from 'lucide-vue-next'
+import { useClipboard } from '@vueuse/core'
 
 interface Transaction {
   id: number
@@ -45,6 +49,16 @@ interface ScrapItem {
   formatted_created_at: string
 }
 
+interface ImportPipelineItem {
+  id: number
+  name: string
+  is_active: boolean
+  token: string | null
+  last_executed_at: string | null
+  next_execution_at: string | null
+  frequency: string | null
+}
+
 interface DealerData {
   id: number
   name: string
@@ -63,9 +77,19 @@ const props = defineProps<{
   dealer: DealerData
   recentTransactions: Transaction[]
   scraps: ScrapItem[]
+  importPipelines: ImportPipelineItem[]
 }>()
 
 const deleteDialogOpen = ref(false)
+const { copy, copied } = useClipboard()
+const copiedTokenId = ref<number | null>(null)
+
+const copyToken = (pipeline: ImportPipelineItem) => {
+  if (!pipeline.token) return
+  copy(pipeline.token)
+  copiedTokenId.value = pipeline.id
+  setTimeout(() => { copiedTokenId.value = null }, 2000)
+}
 
 const confirmDelete = () => {
   router.delete(route('dashboard.dealers.destroy', props.dealer.id), {
@@ -227,6 +251,86 @@ const getStatusVariant = (status: string) => {
                   <TableCell>{{ tx.payment_method || '-' }}</TableCell>
                   <TableCell class="font-mono text-sm">{{ tx.reference || '-' }}</TableCell>
                   <TableCell>{{ tx.formatted_paid_at || '-' }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Import Pipelines -->
+      <Card>
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle>Import Pipelines</CardTitle>
+              <CardDescription>Automated import pipelines configured for this dealer.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" as-child>
+              <Link :href="route('dashboard.import.pipelines.index')">
+                <GitBranch class="w-4 h-4 mr-2" /> View All Pipelines
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div class="overflow-x-auto rounded-lg border bg-background">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead class="w-12">ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Frequency</TableHead>
+                  <TableHead>Last Executed</TableHead>
+                  <TableHead>Next Run</TableHead>
+                  <TableHead>Token</TableHead>
+                  <TableHead class="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableEmpty v-if="importPipelines.length === 0" :colspan="8">
+                  <div class="text-center py-6">
+                    <p class="text-muted-foreground text-sm">No import pipelines yet.</p>
+                  </div>
+                </TableEmpty>
+                <TableRow v-for="pipeline in importPipelines" :key="pipeline.id">
+                  <TableCell class="text-muted-foreground text-sm">#{{ pipeline.id }}</TableCell>
+                  <TableCell class="font-medium">{{ pipeline.name }}</TableCell>
+                  <TableCell>
+                    <Badge :variant="pipeline.is_active ? 'default' : 'secondary'">
+                      {{ pipeline.is_active ? 'Active' : 'Inactive' }}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" class="capitalize">{{ pipeline.frequency ?? '—' }}</Badge>
+                  </TableCell>
+                  <TableCell class="text-sm">{{ pipeline.last_executed_at ?? '—' }}</TableCell>
+                  <TableCell class="text-sm">{{ pipeline.next_execution_at ?? '—' }}</TableCell>
+                  <TableCell>
+                    <div v-if="pipeline.token" class="flex items-center gap-2">
+                      <span class="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
+                        {{ pipeline.token.slice(0, 12) }}••••••••
+                      </span>
+                      <button
+                        type="button"
+                        class="text-muted-foreground hover:text-foreground transition-colors"
+                        :title="copiedTokenId === pipeline.id ? 'Copied!' : 'Copy token'"
+                        @click="copyToken(pipeline)"
+                      >
+                        <Check v-if="copiedTokenId === pipeline.id" class="w-3.5 h-3.5 text-green-500" />
+                        <Copy v-else class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <span v-else class="text-muted-foreground text-sm italic">No token</span>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm" as-child>
+                      <Link :href="route('dashboard.import.pipelines.show', pipeline.id)">
+                        <ExternalLink class="w-3.5 h-3.5" />
+                      </Link>
+                    </Button>
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>

@@ -12,7 +12,9 @@ use App\Http\ViewModels\Dashboard\Scrap\CreateScrapViewModel;
 use App\Http\ViewModels\Dashboard\Scrap\EditScrapViewModel;
 use App\Http\ViewModels\Dashboard\Scrap\ListScrapViewModel;
 use App\Http\ViewModels\Dashboard\Scrap\ShowScrapViewModel;
+use App\Jobs\GenerateScrapPipelineMappingsJob;
 use App\Models\Scrap;
+use App\Services\Import\CreateScrapPipelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response as InertiaResponse;
@@ -50,18 +52,23 @@ final class ScrapController extends Controller
         return inertia('Dashboard/Scrap/Create', new CreateScrapViewModel);
     }
 
-    public function store(StoreScrapRequest $request): RedirectResponse
+    public function store(StoreScrapRequest $request, CreateScrapPipelineService $pipelineService): RedirectResponse
     {
         $this->authorize('create', Scrap::class);
 
-        Scrap::create([
+        $scrap = Scrap::create([
             ...$request->validated(),
             'organization_uuid' => auth()->user()->organization_uuid,
         ]);
 
-        $this->toast('Scrap source created successfully.');
+        // Create a pre-configured import pipeline for this scrap source and
+        // dispatch a background job to generate AI field mappings asynchronously.
+        $pipeline = $pipelineService->createForScrap($scrap);
+        GenerateScrapPipelineMappingsJob::dispatch($pipeline);
 
-        return redirect()->route('dashboard.scraps.index');
+        $this->toast('Scrap source created successfully. Import pipeline is being configured in the background.');
+
+        return back();
     }
 
     public function show(Scrap $scrap): InertiaResponse

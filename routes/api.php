@@ -7,14 +7,16 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Organization API Routes
+| Pipeline API Routes
 |--------------------------------------------------------------------------
 |
-| These routes are protected by organization token authentication.
-| Clients must provide a valid organization token in the Authorization header:
-| Authorization: Bearer org_{token}
-| or
-| X-Organization-Token: org_{token}
+| Each pipeline has its own token stored on import_pipelines.token.
+| A token grants access only to that specific pipeline and its executions.
+|
+| Pass the token in the Authorization header:
+|   Authorization: Bearer org_{token}
+| or via the custom header:
+|   X-Organization-Token: org_{token}
 |
 */
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Dashboard\Scrap;
 
+use App\Rules\FtpFileExists;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreScrapRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreScrapRequest extends FormRequest
     {
         return [
             'dealer_id' => ['required', 'integer', 'exists:dealers,id'],
-            'ftp_file_path' => ['required', 'string', 'max:500'],
+            'ftp_file_path' => ['required', 'string', 'max:500', new FtpFileExists],
             'provider' => ['required', 'string', 'max:255'],
         ];
     }

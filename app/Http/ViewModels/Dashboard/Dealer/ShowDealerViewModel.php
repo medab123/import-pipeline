@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\ViewModels\Dashboard\Dealer;
 
 use App\Models\Dealer;
+use Elaitech\Import\Models\ImportPipeline;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\ViewModels\ViewModel;
 
@@ -49,6 +50,24 @@ final class ShowDealerViewModel extends ViewModel
                 'provider' => $s->provider,
                 'created_at' => $s->created_at->toISOString(),
                 'formatted_created_at' => $s->created_at->format('M d, Y H:i'),
+            ])
+            ->toArray();
+    }
+
+    public function importPipelines(): array
+    {
+        return ImportPipeline::where('target_id', $this->dealer->id)
+            ->where('organization_uuid', $this->dealer->organization_uuid)
+            ->latest()
+            ->get()
+            ->map(fn (ImportPipeline $p) => [
+                'id'               => $p->id,
+                'name'             => $p->name,
+                'is_active'        => $p->is_active,
+                'token'            => $p->token,
+                'last_executed_at' => $p->last_executed_at?->format('M d, Y H:i'),
+                'next_execution_at'=> $p->next_execution_at?->format('M d, Y H:i'),
+                'frequency'        => $p->frequency?->value ?? null,
             ])
             ->toArray();
     }

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Organization;
-use App\Models\OrganizationToken;
 use Closure;
+use Elaitech\Import\Models\ImportPipeline;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,7 +15,7 @@ final class AuthenticateOrganizationToken
     /**
      * Handle an incoming request.
      *
-     * Authenticates requests using organization tokens from the Authorization header.
+     * Authenticates requests using the pipeline token stored on import_pipelines.token.
      * Token format: "Bearer org_{random_string}" or "org_{random_string}"
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -36,15 +36,15 @@ final class AuthenticateOrganizationToken
             ], 401);
         }
 
-        $organizationToken = $this->validateToken($token);
+        $pipeline = ImportPipeline::where('token', $token)->first();
 
-        if (! $organizationToken) {
+        if (! $pipeline) {
             return response()->json([
                 'message' => 'Invalid or expired organization token.',
             ], 401);
         }
 
-        $organization = $organizationToken->organization;
+        $organization = Organization::where('uuid', $pipeline->organization_uuid)->first();
 
         if (! $organization) {
             return response()->json([
@@ -58,14 +58,9 @@ final class AuthenticateOrganizationToken
             ], 403);
         }
 
-        // Update last used timestamp
-        $organizationToken->update([
-            'last_used_at' => now(),
-        ]);
-
-        // Bind the organization into the container for global access
+        // Bind the authenticated pipeline and its organization into the container
+        app()->instance('auth_pipeline', $pipeline);
         app()->instance('organization', $organization);
-        app()->instance('organization_token', $organizationToken);
 
         return $next($request);
     }
@@ -75,20 +70,16 @@ final class AuthenticateOrganizationToken
      */
     private function extractToken(Request $request): ?string
     {
-        // Try Authorization header first (Bearer token)
         $authorization = $request->header('Authorization');
 
         if ($authorization) {
-            // Handle "Bearer org_..." format
             if (preg_match('/Bearer\s+(.+)/i', $authorization, $matches)) {
                 return trim($matches[1]);
             }
 
-            // Handle direct token in Authorization header
             return trim($authorization);
         }
 
-        // Fallback to custom header
         return $request->header('X-Organization-Token');
     }
 
@@ -102,19 +93,5 @@ final class AuthenticateOrganizationToken
         }
 
         return str_starts_with($token, 'org_') && strlen($token) > 4;
-    }
-
-    /**
-     * Validate the token against the database.
-     */
-    private function validateToken(string $token): ?OrganizationToken
-    {
-        $organizationToken = OrganizationToken::findByPlainTextToken($token);
-
-        if (! $organizationToken || ! $organizationToken->isValid()) {
-            return null;
-        }
-
-        return $organizationToken;
     }
 }

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Dashboard\Organization\UserController;
 use App\Http\Controllers\Dashboard\Organization\TargetFieldController;
+use App\Http\Controllers\Dashboard\Organization\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'organization'])
@@ -28,7 +28,6 @@ Route::middleware(['auth', 'organization'])
         Route::resource('target-fields', TargetFieldController::class)
             ->whereNumber('target_field');
 
-        // API Tokens
-        Route::resource('tokens', App\Http\Controllers\Dashboard\Organization\OrganizationTokenController::class)
-            ->only(['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']);
+        // API Tokens management has been removed.
+        // Tokens are now set directly on each pipeline via the pipeline stepper.
     });

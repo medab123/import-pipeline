@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\Dealer;
 
+use App\Enums\DealerStatus;
 use App\Enums\ToastNotificationVariant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\Dealer\StoreDealerRequest;
@@ -65,10 +66,13 @@ final class DealerController extends Controller
     {
         $this->authorize('create', Dealer::class);
 
-        Dealer::create([
+        $dealer = Dealer::create([
             ...$request->validated(),
             'organization_uuid' => auth()->user()->organization_uuid,
+            'status' => DealerStatus::Pending->value,
         ]);
+
+        $dealer->resolveStatus();
 
         $this->toast('Dealer created successfully.');
 
@@ -94,6 +98,8 @@ final class DealerController extends Controller
         $this->authorize('update', $dealer);
 
         $dealer->update($request->validated());
+
+        $dealer->fresh()->resolveStatus();
 
         $this->toast('Dealer updated successfully.');
 

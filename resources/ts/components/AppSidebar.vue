@@ -119,15 +119,11 @@ const data = computed(() => {
             title: "Settings",
             url: "#", // Placeholder or redirect to first item
             icon: Settings,
-            isActive: route().current()?.startsWith('dashboard.organization.tokens') || route().current()?.startsWith('dashboard.organization.target-fields'),
+            isActive: route().current()?.startsWith('dashboard.organization.target-fields') ?? false,
             items: [
                 {
                     title: "Target Fields",
                     url: route('dashboard.organization.target-fields.index'),
-                },
-                {
-                    title: "Token Management",
-                    url: route('dashboard.organization.tokens.index'),
                 },
             ],
         })

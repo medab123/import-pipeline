@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             OrganizationSeeder::class,
             RolePermissionSeeder::class,
             AdminSeeder::class,
-            OrganizationTokenSeeder::class,
         ]);
     }
 }

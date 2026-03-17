@@ -92,4 +92,14 @@ final class DealerViewModel extends ViewModel
     {
         return (bool) ($this->dealer->is_paid ?? false);
     }
+
+    public function hasFbmpToken(): bool
+    {
+        return ! empty($this->dealer->fbmp_app_access_token);
+    }
+
+    public function hasScrapSource(): bool
+    {
+        return ($this->dealer->scraps_count ?? 0) > 0;
+    }
 }

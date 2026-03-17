@@ -23,7 +23,7 @@ const props = defineProps<{
 
 const form = useForm({
   name: '',
-  status: 'active',
+  status: 'pending',
   notes: '',
   posting_address: '',
   website_url: '',

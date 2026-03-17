@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import { route } from "ziggy-js";
 import { ref, watch } from "vue";
 import { useDebounceFn } from "@vueuse/core";
@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
 import {
     DropdownMenu,
@@ -43,6 +44,14 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
     Plus,
     MoreHorizontal,
     Edit,
@@ -51,6 +60,7 @@ import {
     Eye,
     X,
     Store,
+    DatabaseZap,
 } from "lucide-vue-next";
 
 interface DealerItem {
@@ -63,6 +73,8 @@ interface DealerItem {
     transactionsCount: number;
     scrapsCount: number;
     isPaid: boolean;
+    hasFbmpToken: boolean;
+    hasScrapSource: boolean;
     formattedCreatedAt: string;
 }
 
@@ -116,8 +128,44 @@ const confirmDelete = () => {
     });
 };
 
+// Add Scrap Source dialog
+const scrapDialogOpen = ref(false);
+const scrapDealerTarget = ref<DealerItem | null>(null);
+
+const scrapForm = useForm({
+    dealer_id: "" as string | number,
+    ftp_file_path: "",
+    provider: "",
+});
+
+const openScrapDialog = (dealer: DealerItem) => {
+    scrapDealerTarget.value = dealer;
+    scrapForm.reset();
+    scrapForm.clearErrors();
+    scrapForm.dealer_id = dealer.id;
+    scrapDialogOpen.value = true;
+};
+
+const submitScrapSource = () => {
+    scrapForm.post(route("dashboard.scraps.store"), {
+        onSuccess: () => {
+            scrapDialogOpen.value = false;
+            scrapDealerTarget.value = null;
+        },
+    });
+};
+
 const getStatusVariant = (status: string) => {
-    return status === "active" ? "default" : "secondary";
+    switch (status) {
+        case "active":
+            return "default";
+        case "pending":
+            return "outline";
+        case "inactive":
+            return "secondary";
+        default:
+            return "secondary";
+    }
 };
 </script>
 
@@ -189,7 +237,7 @@ const getStatusVariant = (status: string) => {
                         <TableBody>
                             <TableEmpty
                                 v-if="dealers.length === 0"
-                                :colspan="6"
+                                :colspan="7"
                             >
                                 <div class="text-center py-12">
                                     <div
@@ -228,12 +276,28 @@ const getStatusVariant = (status: string) => {
                                     dealer.name
                                 }}</TableCell>
                                 <TableCell>
-                                    <Badge
-                                        :variant="
-                                            getStatusVariant(dealer.status)
-                                        "
-                                        >{{ dealer.status }}</Badge
-                                    >
+                                    <div class="flex flex-col gap-1">
+                                        <Badge
+                                            :variant="
+                                                getStatusVariant(dealer.status)
+                                            "
+                                            >{{ dealer.status }}</Badge
+                                        >
+                                        <div
+                                            v-if="dealer.status === 'pending'"
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            <span v-if="!dealer.hasFbmpToken && !dealer.hasScrapSource">
+                                                Missing FBMP token & scrap source
+                                            </span>
+                                            <span v-else-if="!dealer.hasFbmpToken">
+                                                Missing FBMP token
+                                            </span>
+                                            <span v-else-if="!dealer.hasScrapSource">
+                                                Missing scrap source
+                                            </span>
+                                        </div>
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <Badge
@@ -306,6 +370,21 @@ const getStatusVariant = (status: string) => {
                                                         Edit
                                                     </Link>
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    :disabled="dealer.hasScrapSource"
+                                                    @click="
+                                                        !dealer.hasScrapSource && openScrapDialog(dealer)
+                                                    "
+                                                >
+                                                    <DatabaseZap
+                                                        class="w-4 h-4 mr-2"
+                                                    />
+                                                    Add Scrap Source
+                                                    <span
+                                                        v-if="dealer.hasScrapSource"
+                                                        class="ml-auto text-xs text-muted-foreground"
+                                                    >Added</span>
+                                                </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem
                                                     class="text-destructive"
@@ -333,6 +412,7 @@ const getStatusVariant = (status: string) => {
             </CardContent>
         </Card>
 
+        <!-- Delete Dealer Dialog -->
         <AlertDialog v-model:open="deleteDialogOpen">
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -357,5 +437,57 @@ const getStatusVariant = (status: string) => {
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+
+        <!-- Add Scrap Source Dialog -->
+        <Dialog v-model:open="scrapDialogOpen">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Add Scrap Source</DialogTitle>
+                    <DialogDescription>
+                        Add a new scrap source for
+                        <span class="font-semibold">{{ scrapDealerTarget?.name }}</span>.
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="submitScrapSource" class="space-y-4">
+                    <div class="space-y-2">
+                        <Label for="scrap_provider">Provider</Label>
+                        <Input
+                            id="scrap_provider"
+                            v-model="scrapForm.provider"
+                            placeholder="e.g. AutoTrader, Cars.com"
+                            :class="{ 'border-destructive': scrapForm.errors.provider }"
+                        />
+                        <p v-if="scrapForm.errors.provider" class="text-sm text-destructive">
+                            {{ scrapForm.errors.provider }}
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <Label for="scrap_ftp_file_path">FTP File Path</Label>
+                        <Input
+                            id="scrap_ftp_file_path"
+                            v-model="scrapForm.ftp_file_path"
+                            placeholder="/data/feeds/dealer_feed.csv"
+                            class="font-mono text-sm"
+                            :class="{ 'border-destructive': scrapForm.errors.ftp_file_path }"
+                        />
+                        <p v-if="scrapForm.errors.ftp_file_path" class="text-sm text-destructive">
+                            {{ scrapForm.errors.ftp_file_path }}
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            @click="scrapDialogOpen = false"
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" :disabled="scrapForm.processing">
+                            {{ scrapForm.processing ? "Saving..." : "Add Scrap Source" }}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </Default>
 </template>

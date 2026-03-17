@@ -8,6 +8,7 @@ use App\Models\Dealer;
 use App\Models\Organization;
 use App\Models\PaymentTransaction;
 use App\Models\Scrap;
+use App\Observers\ScrapObserver;
 use App\Policies\DealerPolicy;
 use App\Policies\ImportPipelinePolicy;
 use App\Policies\PaymentTransactionPolicy;
@@ -53,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerTenantGlobalScopes();
         $this->registerPolicies();
         $this->registerQueueTenantContext();
+        $this->registerObservers();
     }
 
     /**
@@ -100,6 +102,14 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Dealer::class, DealerPolicy::class);
         Gate::policy(PaymentTransaction::class, PaymentTransactionPolicy::class);
         Gate::policy(Scrap::class, ScrapPolicy::class);
+    }
+
+    /**
+     * Register model observers.
+     */
+    private function registerObservers(): void
+    {
+        Scrap::observe(ScrapObserver::class);
     }
 
     /**

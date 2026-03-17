@@ -22,7 +22,7 @@ class BasicInfoStep extends AbstractImportPipelineStep
      */
     public function process(ImportPipeline $pipeline, array $data): ImportPipeline
     {
-        $pipeline->update([
+        $updateData = [
             'name' => $data['name'] ?? $pipeline->name,
             'description' => $data['description'] ?? $pipeline->description,
             'target_id' => $data['target_id'] ?? $pipeline->target_id,
@@ -30,7 +30,14 @@ class BasicInfoStep extends AbstractImportPipelineStep
             'is_active' => $data['auto_start'] ?? $pipeline->is_active,
             'start_time' => $data['start_time'],
             'updated_by' => auth()->id(),
-        ]);
+        ];
+
+        // Only update token if explicitly provided; never overwrite with empty string
+        if (! empty($data['token'])) {
+            $updateData['token'] = $data['token'];
+        }
+
+        $pipeline->update($updateData);
 
         return $pipeline->fresh();
     }
@@ -43,6 +50,7 @@ class BasicInfoStep extends AbstractImportPipelineStep
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'token' => ['nullable', 'string', 'max:255'],
             'target_id' => ['required', 'integer'],
             'frequency' => ['required', 'string', 'in:once,daily,weekly,monthly'],
             'start_time' => ['nullable', 'date_format:H:i'],
