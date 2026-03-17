@@ -19,29 +19,22 @@ interface Option {
 interface DealerData {
   id: number
   name: string
-  status: string
   notes: string | null
   postingAddress: string | null
   websiteUrl: string | null
-  fbmpAppAccessToken: string | null
-  fbmpAppUrl: string | null
   paymentPeriod: string
 }
 
 const props = defineProps<{
   dealer: DealerData
-  statuses: Option[]
   paymentPeriods: Option[]
 }>()
 
 const form = useForm({
   name: props.dealer.name,
-  status: props.dealer.status,
   notes: props.dealer.notes || '',
   posting_address: props.dealer.postingAddress || '',
   website_url: props.dealer.websiteUrl || '',
-  fbmp_app_access_token: props.dealer.fbmpAppAccessToken || '',
-  fbmp_app_url: props.dealer.fbmpAppUrl || '',
   payment_period: props.dealer.paymentPeriod,
 })
 
@@ -88,18 +81,6 @@ const submit = () => {
                 />
                 <p v-if="form.errors.name" class="text-sm text-destructive">{{ form.errors.name }}</p>
               </div>
-              <div class="space-y-2">
-                <Label for="status">Status</Label>
-                <Select v-model="form.status">
-                  <SelectTrigger :class="{ 'border-destructive': form.errors.status }">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="s in statuses" :key="s.value" :value="s.value">{{ s.label }}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p v-if="form.errors.status" class="text-sm text-destructive">{{ form.errors.status }}</p>
-              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,28 +116,6 @@ const submit = () => {
                   </SelectContent>
                 </Select>
                 <p v-if="form.errors.payment_period" class="text-sm text-destructive">{{ form.errors.payment_period }}</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label for="fbmp_app_url">FBMP App URL</Label>
-                <Input
-                  id="fbmp_app_url"
-                  v-model="form.fbmp_app_url"
-                  placeholder="https://fbmp-app.example.com"
-                />
-                <p v-if="form.errors.fbmp_app_url" class="text-sm text-destructive">{{ form.errors.fbmp_app_url }}</p>
-              </div>
-              <div class="space-y-2">
-                <Label for="fbmp_app_access_token">FBMP App Access Token</Label>
-                <Input
-                  id="fbmp_app_access_token"
-                  v-model="form.fbmp_app_access_token"
-                  placeholder="Access token"
-                  class="font-mono text-sm"
-                />
-                <p v-if="form.errors.fbmp_app_access_token" class="text-sm text-destructive">{{ form.errors.fbmp_app_access_token }}</p>
               </div>
             </div>
 
