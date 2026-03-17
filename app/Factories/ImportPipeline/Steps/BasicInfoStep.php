@@ -29,13 +29,9 @@ class BasicInfoStep extends AbstractImportPipelineStep
             'frequency' => $data['frequency'] ?? $pipeline->frequency,
             'is_active' => $data['auto_start'] ?? $pipeline->is_active,
             'start_time' => $data['start_time'],
+            'token' => $data['token'] ?? $pipeline->token,
             'updated_by' => auth()->id(),
         ];
-
-        // Only update token if explicitly provided; never overwrite with empty string
-        if (! empty($data['token'])) {
-            $updateData['token'] = $data['token'];
-        }
 
         $pipeline->update($updateData);
 
