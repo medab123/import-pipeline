@@ -9,6 +9,7 @@ use App\Models\Organization;
 use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
+use Elaitech\Import\Services\Jobs\ProcessImportPipelineJob;
 use Elaitech\Import\Services\Pipeline\Services\FeedKeysService;
 use Elaitech\Import\Services\Pipeline\Services\TargetFieldsService;
 use Illuminate\Bus\Queueable;
@@ -95,6 +96,8 @@ final class GenerateScrapPipelineMappingsJob implements ShouldQueue
                 'updated_at' => now()->toDateTimeString(),
             ]);
         }
+
+        ProcessImportPipelineJob::dispatch($this);
 
         Log::info('GenerateScrapPipelineMappingsJob: mappings generated successfully.', [
             'pipeline_id' => $this->pipeline->id,
