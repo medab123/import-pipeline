@@ -14,7 +14,7 @@ return new class extends Migration
         });
 
         // Migrate existing single URL to JSON array
-        DB::table('dealers')->whereNotNull('website_url')->each(function ($dealer) {
+        DB::table('dealers')->whereNotNull('website_url')->orderBy('id')->each(function ($dealer) {
             DB::table('dealers')->where('id', $dealer->id)->update([
                 'website_urls' => json_encode([$dealer->website_url]),
             ]);
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('website_url')->nullable()->after('posting_address');
         });
 
-        DB::table('dealers')->whereNotNull('website_urls')->each(function ($dealer) {
+        DB::table('dealers')->whereNotNull('website_urls')->orderBy('id')->each(function ($dealer) {
             $urls = json_decode($dealer->website_urls, true);
             DB::table('dealers')->where('id', $dealer->id)->update([
                 'website_url' => $urls[0] ?? null,
