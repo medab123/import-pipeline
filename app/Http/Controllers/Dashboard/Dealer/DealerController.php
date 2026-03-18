@@ -44,7 +44,7 @@ final class DealerController extends Controller
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
                     ->orWhere('posting_address', 'like', '%'.$request->search.'%')
-                    ->orWhere('website_url', 'like', '%'.$request->search.'%');
+                    ->orWhereJsonContains('website_urls', $request->search);
             });
         }
 

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Plus, X } from 'lucide-vue-next'
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ interface DealerData {
   name: string
   notes: string | null
   postingAddress: string | null
-  websiteUrl: string | null
+  websiteUrls: string[]
   paymentPeriod: string
 }
 
@@ -34,9 +34,17 @@ const form = useForm({
   name: props.dealer.name,
   notes: props.dealer.notes || '',
   posting_address: props.dealer.postingAddress || '',
-  website_url: props.dealer.websiteUrl || '',
+  website_urls: props.dealer.websiteUrls.length > 0 ? [...props.dealer.websiteUrls] : [''],
   payment_period: props.dealer.paymentPeriod,
 })
+
+const addWebsite = () => {
+  form.website_urls.push('')
+}
+
+const removeWebsite = (index: number) => {
+  form.website_urls.splice(index, 1)
+}
 
 const submit = () => {
   form.put(route('dashboard.dealers.update', props.dealer.id))
@@ -93,15 +101,32 @@ const submit = () => {
                 />
                 <p v-if="form.errors.posting_address" class="text-sm text-destructive">{{ form.errors.posting_address }}</p>
               </div>
-              <div class="space-y-2">
-                <Label for="website_url">Website URL</Label>
-                <Input
-                  id="website_url"
-                  v-model="form.website_url"
-                  placeholder="https://example.com"
-                />
-                <p v-if="form.errors.website_url" class="text-sm text-destructive">{{ form.errors.website_url }}</p>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <Label>Website URLs</Label>
+                <Button type="button" variant="outline" size="sm" @click="addWebsite">
+                  <Plus class="w-4 h-4 mr-1" /> Add
+                </Button>
               </div>
+              <div v-for="(url, index) in form.website_urls" :key="index" class="flex items-center gap-2">
+                <Input
+                  v-model="form.website_urls[index]"
+                  placeholder="https://example.com"
+                  :class="{ 'border-destructive': form.errors[`website_urls.${index}`] }"
+                />
+                <Button
+                  v-if="form.website_urls.length > 1"
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  @click="removeWebsite(index)"
+                >
+                  <X class="w-4 h-4" />
+                </Button>
+              </div>
+              <p v-if="form.errors.website_urls" class="text-sm text-destructive">{{ form.errors.website_urls }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

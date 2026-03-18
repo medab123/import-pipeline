@@ -65,9 +65,7 @@ interface DealerData {
   status: string
   notes: string | null
   postingAddress: string | null
-  websiteUrl: string | null
-  fbmpAppAccessToken: string | null
-  fbmpAppUrl: string | null
+  websiteUrls: string[]
   paymentPeriod: string
   formattedCreatedAt: string
   formattedUpdatedAt: string
@@ -169,27 +167,13 @@ const getStatusVariant = (status: string) => {
               <div v-else class="text-muted-foreground text-sm italic">Not set</div>
             </div>
             <div class="space-y-1">
-              <h4 class="text-sm font-medium text-muted-foreground">Website</h4>
-              <a v-if="dealer.websiteUrl" :href="dealer.websiteUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                {{ dealer.websiteUrl }}
-                <ExternalLink class="w-3 h-3" />
-              </a>
-              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <h4 class="text-sm font-medium text-muted-foreground">FBMP App URL</h4>
-              <a v-if="dealer.fbmpAppUrl" :href="dealer.fbmpAppUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                {{ dealer.fbmpAppUrl }}
-                <ExternalLink class="w-3 h-3" />
-              </a>
-              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
-            </div>
-            <div class="space-y-1">
-              <h4 class="text-sm font-medium text-muted-foreground">FBMP Access Token</h4>
-              <div v-if="dealer.fbmpAppAccessToken" class="font-mono text-sm truncate max-w-xs">{{ dealer.fbmpAppAccessToken }}</div>
+              <h4 class="text-sm font-medium text-muted-foreground">Websites</h4>
+              <div v-if="dealer.websiteUrls.length > 0" class="space-y-1">
+                <a v-for="(url, index) in dealer.websiteUrls" :key="index" :href="url" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1 block">
+                  {{ url }}
+                  <ExternalLink class="w-3 h-3" />
+                </a>
+              </div>
               <div v-else class="text-muted-foreground text-sm italic">Not set</div>
             </div>
           </div>
@@ -204,58 +188,6 @@ const getStatusVariant = (status: string) => {
           <span>Created: {{ dealer.formattedCreatedAt }}</span>
           <span>Last Updated: {{ dealer.formattedUpdatedAt }}</span>
         </CardFooter>
-      </Card>
-
-      <!-- Recent Transactions -->
-      <Card>
-        <CardHeader>
-          <div class="flex items-center justify-between">
-            <div>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Latest payment transactions for this dealer.</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" as-child>
-              <Link :href="route('dashboard.payment-transactions.create')">
-                Add Transaction
-              </Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div class="overflow-x-auto rounded-lg border bg-background">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Paid At</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableEmpty v-if="recentTransactions.length === 0" :colspan="6">
-                  <div class="text-center py-6">
-                    <p class="text-muted-foreground text-sm">No transactions yet.</p>
-                  </div>
-                </TableEmpty>
-                <TableRow v-for="tx in recentTransactions" :key="tx.id">
-                  <TableCell>
-                    <Badge variant="outline">{{ tx.type }}</Badge>
-                  </TableCell>
-                  <TableCell class="font-medium">${{ tx.amount }}</TableCell>
-                  <TableCell>
-                    <Badge :variant="getStatusVariant(tx.status)">{{ tx.status }}</Badge>
-                  </TableCell>
-                  <TableCell>{{ tx.payment_method || '-' }}</TableCell>
-                  <TableCell class="font-mono text-sm">{{ tx.reference || '-' }}</TableCell>
-                  <TableCell>{{ tx.formatted_paid_at || '-' }}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
       </Card>
 
       <!-- Import Pipelines -->
@@ -341,17 +273,8 @@ const getStatusVariant = (status: string) => {
       <!-- Scrap Sources -->
       <Card>
         <CardHeader>
-          <div class="flex items-center justify-between">
-            <div>
-              <CardTitle>Scrap Sources</CardTitle>
-              <CardDescription>FTP scrap sources linked to this dealer.</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" as-child>
-              <Link :href="route('dashboard.scraps.create')">
-                Add Scrap Source
-              </Link>
-            </Button>
-          </div>
+          <CardTitle>Scrap Sources</CardTitle>
+          <CardDescription>FTP scrap sources linked to this dealer.</CardDescription>
         </CardHeader>
         <CardContent>
           <div class="overflow-x-auto rounded-lg border bg-background">
@@ -373,6 +296,58 @@ const getStatusVariant = (status: string) => {
                   <TableCell class="font-medium">{{ scrap.provider }}</TableCell>
                   <TableCell class="font-mono text-sm">{{ scrap.ftp_file_path }}</TableCell>
                   <TableCell>{{ scrap.formatted_created_at }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Recent Transactions -->
+      <Card>
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>Latest payment transactions for this dealer.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" as-child>
+              <Link :href="route('dashboard.payment-transactions.create')">
+                Add Transaction
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div class="overflow-x-auto rounded-lg border bg-background">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Paid At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableEmpty v-if="recentTransactions.length === 0" :colspan="6">
+                  <div class="text-center py-6">
+                    <p class="text-muted-foreground text-sm">No transactions yet.</p>
+                  </div>
+                </TableEmpty>
+                <TableRow v-for="tx in recentTransactions" :key="tx.id">
+                  <TableCell>
+                    <Badge variant="outline">{{ tx.type }}</Badge>
+                  </TableCell>
+                  <TableCell class="font-medium">${{ tx.amount }}</TableCell>
+                  <TableCell>
+                    <Badge :variant="getStatusVariant(tx.status)">{{ tx.status }}</Badge>
+                  </TableCell>
+                  <TableCell>{{ tx.payment_method || '-' }}</TableCell>
+                  <TableCell class="font-mono text-sm">{{ tx.reference || '-' }}</TableCell>
+                  <TableCell>{{ tx.formatted_paid_at || '-' }}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

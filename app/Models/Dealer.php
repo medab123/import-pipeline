@@ -21,7 +21,7 @@ class Dealer extends Model
         'status',
         'notes',
         'posting_address',
-        'website_url',
+        'website_urls',
         'fbmp_app_access_token',
         'fbmp_app_url',
         'payment_period',
@@ -32,6 +32,7 @@ class Dealer extends Model
         return [
             'status' => DealerStatus::class,
             'payment_period' => PaymentPeriod::class,
+            'website_urls' => 'array',
         ];
     }
 

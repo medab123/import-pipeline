@@ -38,9 +38,9 @@ final class DealerViewModel extends ViewModel
         return $this->dealer->posting_address;
     }
 
-    public function websiteUrl(): ?string
+    public function websiteUrls(): array
     {
-        return $this->dealer->website_url;
+        return $this->dealer->website_urls ?? [];
     }
 
     public function fbmpAppAccessToken(): ?string

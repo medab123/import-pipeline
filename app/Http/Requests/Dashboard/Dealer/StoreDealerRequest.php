@@ -21,7 +21,8 @@ class StoreDealerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'posting_address' => ['nullable', 'string', 'max:255'],
-            'website_url' => ['nullable', 'string', 'url', 'max:255'],
+            'website_urls' => ['nullable', 'array'],
+            'website_urls.*' => ['required', 'string', 'url', 'max:255'],
             'payment_period' => ['required', 'string', Rule::enum(PaymentPeriod::class)],
         ];
     }
