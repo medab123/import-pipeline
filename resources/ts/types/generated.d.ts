@@ -18,9 +18,41 @@ pipeline: PipelineViewModel;
 frequencies: Array<any>;
 stepper: CreateStepViewModel;
 };
+export type CreateDealerViewModel = {
+paymentPeriods: Array<any>;
+};
+export type CreatePaymentTransactionViewModel = {
+dealers: Array<any>;
+types: Array<any>;
+statuses: Array<any>;
+};
+export type CreateScrapViewModel = {
+dealers: Array<any>;
+};
 export type CreateStepViewModel = {
 steps: Array<StepViewModel>;
 current: StepViewModel;
+};
+export type DealerStatus = 'pending' | 'active' | 'inactive';
+export type DealerViewModel = {
+id: number;
+name: string;
+status: string;
+notes: string;
+postingAddress: string;
+websiteUrls: Array<any>;
+fbmpAppAccessToken: string;
+fbmpAppUrl: string;
+paymentPeriod: string;
+createdAt: string;
+updatedAt: string;
+formattedCreatedAt: string;
+formattedUpdatedAt: string;
+transactionsCount: number;
+scrapsCount: number;
+isPaid: boolean;
+hasFbmpToken: boolean;
+hasScrapSource: boolean;
 };
 export type DownloaderConfigStepViewModel = {
 pipeline: PipelineViewModel;
@@ -42,6 +74,20 @@ queryParams: Array<any>;
 verifySsl: boolean;
 followRedirects: boolean;
 };
+export type EditDealerViewModel = {
+dealer: DealerViewModel;
+paymentPeriods: Array<any>;
+};
+export type EditPaymentTransactionViewModel = {
+transaction: PaymentTransactionViewModel;
+dealers: Array<any>;
+types: Array<any>;
+statuses: Array<any>;
+};
+export type EditScrapViewModel = {
+scrap: ScrapViewModel;
+dealers: Array<any>;
+};
 export type FilterConfigStepViewModel = {
 pipeline: PipelineViewModel;
 stepper: CreateStepViewModel;
@@ -60,17 +106,32 @@ imageSeparator: string;
 active: boolean;
 downloadMode: string;
 imagesKey: string;
-feedKeys: Array<any>;
+targetFields: Array<any>;
 };
 export type ListActivityLogViewModel = {
 logs: any;
 pipeline: PipelineViewModel;
 paginator: PaginatorViewModel;
 };
+export type ListDealerViewModel = {
+dealers: Array<DealerViewModel>;
+paginator: PaginatorViewModel;
+filters: Array<any>;
+};
+export type ListPaymentTransactionViewModel = {
+transactions: Array<PaymentTransactionViewModel>;
+paginator: PaginatorViewModel;
+filters: Array<any>;
+};
 export type ListPipelineViewModel = {
 pipelines: Array<PipelineViewModel>;
 paginator: PaginatorViewModel;
 stats: PipelineStatsViewModel;
+};
+export type ListScrapViewModel = {
+scraps: Array<ScrapViewModel>;
+paginator: PaginatorViewModel;
+filters: Array<any>;
 };
 export type MapperConfigStepViewModel = {
 pipeline: PipelineViewModel;
@@ -92,20 +153,34 @@ total: number;
 nextPageUrl: string;
 previousPageUrl: string;
 };
+export type PaymentPeriod = 'month' | 'year';
+export type PaymentTransactionStatus = 'pending' | 'completed' | 'failed' | 'refunded';
+export type PaymentTransactionType = 'dealer_payment' | 'fbmp_payment';
+export type PaymentTransactionViewModel = {
+id: number;
+dealerId: number;
+dealerName: string;
+type: string;
+amount: string;
+status: string;
+paymentMethod: string;
+reference: string;
+paidAt: string;
+formattedPaidAt: string;
+createdAt: string;
+formattedCreatedAt: string;
+};
 export type PipelineStatsViewModel = {
-active: number;
-successful: number;
-failed: number;
-running: number;
 total: number;
-successRate: number;
-failureRate: number;
+active: number;
+inactive: number;
+needsConfiguration: number;
 };
 export type PipelineViewModel = {
 id: number;
 name: string;
 description: string;
-targetId: any;
+targetId: string | number;
 frequency: string;
 startTime: string;
 formattedStartTime: string;
@@ -121,6 +196,7 @@ lastExecutedAt: string;
 formattedLastExecutedAt: string;
 nextExecutionAt: string;
 formattedNextExecutionAt: string;
+token: string;
 config: any;
 };
 export type PreviewStepViewModel = {
@@ -148,6 +224,29 @@ trim: boolean;
 entryPoint: string;
 keepRoot: boolean;
 testResult: Array<any>;
+};
+export type ScrapViewModel = {
+id: number;
+dealerId: number;
+dealerName: string;
+ftpFilePath: string;
+provider: string;
+createdAt: string;
+formattedCreatedAt: string;
+updatedAt: string;
+formattedUpdatedAt: string;
+};
+export type ShowDealerViewModel = {
+dealer: DealerViewModel;
+recentTransactions: Array<any>;
+scraps: Array<any>;
+importPipelines: Array<any>;
+};
+export type ShowPaymentTransactionViewModel = {
+transaction: PaymentTransactionViewModel;
+};
+export type ShowScrapViewModel = {
+scrap: ScrapViewModel;
 };
 export type StepViewModel = {
 step: any;

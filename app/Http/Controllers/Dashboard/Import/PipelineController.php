@@ -6,12 +6,14 @@ namespace App\Http\Controllers\Dashboard\Import;
 
 use Elaitech\Import\Contracts\Services\ImportDashboard\ImportDashboardServiceInterface;
 use Elaitech\Import\Enums\ImportPipelineFrequency;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\ToastNotificationVariant;
 use App\Http\Controllers\Controller;
 use App\Http\ViewModels\Dashboard\Import\ActivityLogViewModel;
 use App\Http\ViewModels\Dashboard\Import\ListActivityLogViewModel;
 use App\Http\ViewModels\Dashboard\Import\ListPipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
+use App\Http\ViewModels\PipelineStatsViewModel;
 use App\Models\ImportPipelineResult;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
@@ -37,7 +39,32 @@ final class PipelineController extends Controller
         $search = $request->get('search');
         $paginated = $this->dashboardService->paginatePipelines($targetId, $perPage, $search);
 
-        return inertia('Dashboard/Import/Pipelines/Index', new ListPipelineViewModel($paginated));
+        // Compute pipeline stats by status
+        $total = ImportPipeline::count();
+        $active = ImportPipeline::where('is_active', true)
+            ->whereHas('config', function ($q) {
+                $q->select('pipeline_id')
+                    ->groupBy('pipeline_id')
+                    ->havingRaw('count(*) > 4');
+            })
+            ->count();
+        $inactive = ImportPipeline::where('is_active', false)
+            ->whereHas('config', function ($q) {
+                $q->select('pipeline_id')
+                    ->groupBy('pipeline_id')
+                    ->havingRaw('count(*) > 4');
+            })
+            ->count();
+        $needsConfiguration = $total - $active - $inactive;
+
+        $stats = new PipelineStatsViewModel(
+            total: $total,
+            active: $active,
+            inactive: $inactive,
+            needsConfiguration: $needsConfiguration,
+        );
+
+        return inertia('Dashboard/Import/Pipelines/Index', new ListPipelineViewModel($paginated, $stats));
     }
 
     public function show(ImportPipeline $pipeline): Response
