@@ -38,6 +38,7 @@ const props = defineProps<{
     email: string
     avatar: string | null
     initials: string
+    role: string
   }
 }>()
 
@@ -99,6 +100,9 @@ const handleLogout = () => {
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">{{ user.name }}</span>
                 <span class="truncate text-xs">{{ user.email }}</span>
+                <span v-if="user.role" class="mt-0.5 inline-flex w-fit items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                  {{ user.role }}
+                </span>
               </div>
             </div>
           </DropdownMenuLabel>

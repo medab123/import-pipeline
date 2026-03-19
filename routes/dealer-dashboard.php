@@ -7,7 +7,7 @@ use App\Http\Controllers\Dashboard\PaymentTransaction\PaymentTransactionControll
 use App\Http\Controllers\Dashboard\Scrap\ScrapController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'organization'])
+Route::middleware(['auth', 'organization', 'permission:view dealers'])
     ->prefix('dashboard')
     ->name('dashboard.')
     ->group(function () {

@@ -6,11 +6,8 @@ import { route } from 'ziggy-js'
 import {
     Upload,
     Users,
-    Activity,
     Settings,
     Store,
-    CreditCard,
-    HardDrive,
 } from "lucide-vue-next"
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
@@ -30,8 +27,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
     variant: "inset",
 })
 
-// Permission helpers (similar to Laravel's can/cant)
-const { authUser, can } = usePermissions()
+const { can, roles } = usePermissions()
 
 // Generate user initials from name
 const getUserInitials = (name: string | null | undefined): string => {
@@ -51,20 +47,31 @@ const userData = computed(() => {
             email: '',
             avatar: null,
             initials: 'G',
+            role: '',
         }
     }
 
     return {
         name: user.name || 'User',
         email: user.email || '',
-        avatar: null, // You can add avatar URL if available in the future
+        avatar: null,
         initials: getUserInitials(user.name),
+        role: roles.value[0] ?? '',
     }
 })
 
 const data = computed(() => {
-    const navMain = [
-        {
+    const navMain: Array<{
+        title: string
+        url: string
+        icon: typeof Upload
+        isActive: boolean
+        items: Array<{ title: string; url: string }>
+    }> = []
+
+    // Import section - visible to users with 'view pipelines' permission
+    if (can('view pipelines')) {
+        navMain.push({
             title: "Import",
             url: route('dashboard.import.pipelines.index'),
             icon: Upload,
@@ -75,32 +82,35 @@ const data = computed(() => {
                     url: route('dashboard.import.pipelines.index'),
                 },
             ],
-        },
-    ]
+        })
+    }
 
-    // Dealers section
-    navMain.push({
-        title: "Dealers",
-        url: route('dashboard.dealers.index'),
-        icon: Store,
-        isActive: route().current()?.startsWith('dashboard.dealers') ?? false,
-        items: [
-            {
-                title: "All Dealers",
-                url: route('dashboard.dealers.index'),
-            },
-            {
-                title: "Transactions",
-                url: route('dashboard.payment-transactions.index'),
-            },
-            {
-                title: "Scrap Sources",
-                url: route('dashboard.scraps.index'),
-            },
-        ],
-    })
+    // Dealers section - visible to users with 'view dealers' permission
+    if (can('view dealers')) {
+        navMain.push({
+            title: "Dealers",
+            url: route('dashboard.dealers.index'),
+            icon: Store,
+            isActive: route().current()?.startsWith('dashboard.dealers') ?? false,
+            items: [
+                {
+                    title: "All Dealers",
+                    url: route('dashboard.dealers.index'),
+                },
+                {
+                    title: "Transactions",
+                    url: route('dashboard.payment-transactions.index'),
+                },
+                {
+                    title: "Scrap Sources",
+                    url: route('dashboard.scraps.index'),
+                },
+            ],
+        })
+    }
 
-    if (can('manage users')) {
+    // Organization & Settings - visible only to users with 'manage organization' permission
+    if (can('manage organization')) {
         navMain.push({
             title: "Organization",
             url: route('dashboard.organization.users.index'),
@@ -114,10 +124,9 @@ const data = computed(() => {
             ],
         })
 
-        // Settings Group
         navMain.push({
             title: "Settings",
-            url: "#", // Placeholder or redirect to first item
+            url: "#",
             icon: Settings,
             isActive: route().current()?.startsWith('dashboard.organization.target-fields') ?? false,
             items: [

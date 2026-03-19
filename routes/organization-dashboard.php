@@ -6,7 +6,7 @@ use App\Http\Controllers\Dashboard\Organization\TargetFieldController;
 use App\Http\Controllers\Dashboard\Organization\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'organization'])
+Route::middleware(['auth', 'organization', 'permission:manage organization'])
     ->prefix('dashboard/organization')
     ->name('dashboard.organization.')
     ->group(function () {

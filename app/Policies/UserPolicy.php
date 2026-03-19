@@ -14,12 +14,12 @@ final class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admins can view all users
         if ($user->isAdmin()) {
             return true;
         }
 
         return $user->organization_uuid !== null
+            && $user->can('manage organization')
             && $user->can('manage users');
     }
 
@@ -29,6 +29,7 @@ final class UserPolicy
     public function create(User $user): bool
     {
         return $user->organization_uuid !== null
+            && $user->can('manage organization')
             && $user->can('manage users');
     }
 
@@ -44,6 +45,7 @@ final class UserPolicy
         }
 
         return $user->organization_uuid !== null
+            && $user->can('manage organization')
             && $user->can('manage users')
             && $user->organization_uuid === $target->organization_uuid;
     }
@@ -61,6 +63,7 @@ final class UserPolicy
         }
 
         return $user->organization_uuid !== null
+            && $user->can('manage organization')
             && $user->can('manage users')
             && $user->organization_uuid === $target->organization_uuid
             && $user->id !== $target->id;

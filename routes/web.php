@@ -30,7 +30,17 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return to_route('dashboard.import.pipelines.index');
+    $user = auth()->user();
+
+    if ($user->hasPermissionTo('view pipelines')) {
+        return to_route('dashboard.import.pipelines.index');
+    }
+
+    if ($user->hasPermissionTo('view dealers')) {
+        return to_route('dashboard.dealers.index');
+    }
+
+    abort(403, 'You do not have permission to access the dashboard.');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 include __DIR__ . '/import-dashboard.php';

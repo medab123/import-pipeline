@@ -11,54 +11,29 @@ use Spatie\ViewModels\ViewModel;
 final class PipelineStatsViewModel extends ViewModel
 {
     public function __construct(
+        private readonly int $total = 0,
         private readonly int $active = 0,
-        private readonly int $successful = 0,
-        private readonly int $failed = 0,
-        private readonly int $running = 0,
+        private readonly int $inactive = 0,
+        private readonly int $needsConfiguration = 0,
     ) {}
+
+    public function total(): int
+    {
+        return $this->total;
+    }
 
     public function active(): int
     {
         return $this->active;
     }
 
-    public function successful(): int
+    public function inactive(): int
     {
-        return $this->successful;
+        return $this->inactive;
     }
 
-    public function failed(): int
+    public function needsConfiguration(): int
     {
-        return $this->failed;
-    }
-
-    public function running(): int
-    {
-        return $this->running;
-    }
-
-    public function total(): int
-    {
-        return $this->active + $this->successful + $this->failed + $this->running;
-    }
-
-    public function successRate(): float
-    {
-        $total = $this->total();
-        if ($total === 0) {
-            return 0.0;
-        }
-
-        return round(($this->successful / $total) * 100, 2);
-    }
-
-    public function failureRate(): float
-    {
-        $total = $this->total();
-        if ($total === 0) {
-            return 0.0;
-        }
-
-        return round(($this->failed / $total) * 100, 2);
+        return $this->needsConfiguration;
     }
 }
