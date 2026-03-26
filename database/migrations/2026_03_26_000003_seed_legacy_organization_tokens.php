@@ -51,7 +51,7 @@ return new class extends Migration
         ];
 
         foreach ($legacyTokens as $token => $pipelineId) {
-            DB::table('organization_tokens')->insert([
+            DB::table('organization_tokens')->insertOrIgnore([
                 'organization_uuid' => $organizationUuid,
                 'name' => 'Legacy Token (Pipeline #'.$pipelineId.')',
                 'description' => 'Migrated from hardcoded middleware token',
