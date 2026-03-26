@@ -112,12 +112,7 @@ final class SyncDealersFromSheet extends Command
                 $fbmpTokenService->generateAndSave($dealer, $userEmail);
 
                 // 5. Create org API token for this pipeline
-                $orgToken = OrganizationToken::create([
-                    'organization_uuid' => $orgUuid,
-                    'name' => $dealerName,
-                    'description' => "Auto-created for pipeline #{$pipeline->id}",
-                    'token' => 'org_'.Str::random(40),
-                ]);
+                $orgToken = OrganizationToken::first();
 
                 // 6. Write token + pipeline ID back to the sheet
                 $sheetsService->updateRow($sheetRowNumber, $orgToken->token, $pipeline->id);
