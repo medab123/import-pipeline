@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Organization;
+use App\Models\OrganizationToken;
 use Closure;
-use Elaitech\Import\Models\ImportPipeline;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,40 +15,35 @@ final class AuthenticateOrganizationToken
     /**
      * Handle an incoming request.
      *
-     * Authenticates requests using the pipeline token stored on import_pipelines.token.
+     * Authenticates requests using an organization-level token from the
+     * organization_tokens table. Each organization can have multiple tokens.
      * Token format: "Bearer org_{random_string}" or "org_{random_string}"
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $token = $this->extractToken($request);
 
-        if (! $token) {
+        if (! $token || ! $this->isValidTokenFormat($token)) {
             return response()->json([
                 'message' => 'Organization token is required.',
             ], 401);
         }
 
-        if (! $this->isValidTokenFormat($token)) {
-            return response()->json([
-                'message' => 'Invalid token format.',
-            ], 401);
-        }
+        $organizationToken = OrganizationToken::with('organization')->where('token', $token)->first();
 
-        $pipeline = ImportPipeline::where('token', $token)->first();
-
-        if (! $pipeline) {
+        if (! $organizationToken) {
             return response()->json([
                 'message' => 'Invalid or expired organization token.',
             ], 401);
         }
 
-        $organization = Organization::where('uuid', $pipeline->organization_uuid)->first();
+        $organization = $organizationToken->organization;
 
         if (! $organization) {
             return response()->json([
-                'message' => 'Organization not found.',
+                'message' => 'Organization not found for this token.',
             ], 404);
         }
 
@@ -58,9 +53,12 @@ final class AuthenticateOrganizationToken
             ], 403);
         }
 
-        // Bind the authenticated pipeline and its organization into the container
-        app()->instance('auth_pipeline', $pipeline);
+        // Track token usage
+        $organizationToken->forceFill(['last_used_at' => now()])->saveQuietly();
+
+        // Bind the authenticated organization and token into the container
         app()->instance('organization', $organization);
+        app()->instance('auth_token', $organizationToken);
 
         return $next($request);
     }
@@ -88,10 +86,6 @@ final class AuthenticateOrganizationToken
      */
     private function isValidTokenFormat(?string $token): bool
     {
-        if (! $token) {
-            return false;
-        }
-
-        return str_starts_with($token, 'org_') && strlen($token) > 4;
+        return $token && str_starts_with($token, 'org_') && strlen($token) > 4;
     }
 }

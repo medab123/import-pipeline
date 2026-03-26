@@ -61,13 +61,12 @@ final class ShowDealerViewModel extends ViewModel
             ->latest()
             ->get()
             ->map(fn (ImportPipeline $p) => [
-                'id'               => $p->id,
-                'name'             => $p->name,
-                'is_active'        => $p->is_active,
-                'token'            => $p->token,
+                'id' => $p->id,
+                'name' => $p->name,
+                'is_active' => $p->is_active,
                 'last_executed_at' => $p->last_executed_at?->format('M d, Y H:i'),
-                'next_execution_at'=> $p->next_execution_at?->format('M d, Y H:i'),
-                'frequency'        => $p->frequency?->value ?? null,
+                'next_execution_at' => $p->next_execution_at?->format('M d, Y H:i'),
+                'frequency' => $p->frequency?->value ?? null,
             ])
             ->toArray();
     }

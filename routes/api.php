@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Pipeline API Routes
+| Organization API Routes
 |--------------------------------------------------------------------------
 |
-| Each pipeline has its own token stored on import_pipelines.token.
-| A token grants access only to that specific pipeline and its executions.
+| Each organization has a single token stored on organizations.token.
+| A token grants access to all pipelines within that organization.
 |
 | Pass the token in the Authorization header:
 |   Authorization: Bearer org_{token}

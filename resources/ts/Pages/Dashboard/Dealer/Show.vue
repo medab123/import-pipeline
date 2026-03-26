@@ -23,11 +23,10 @@ import {
   Edit,
   Trash2,
   ExternalLink,
+  GitBranch,
   Copy,
   Check,
-  GitBranch,
 } from 'lucide-vue-next'
-import { useClipboard } from '@vueuse/core'
 
 interface Transaction {
   id: number
@@ -53,7 +52,6 @@ interface ImportPipelineItem {
   id: number
   name: string
   is_active: boolean
-  token: string | null
   last_executed_at: string | null
   next_execution_at: string | null
   frequency: string | null
@@ -66,6 +64,8 @@ interface DealerData {
   notes: string | null
   postingAddress: string | null
   websiteUrls: string[]
+  fbmpAppAccessToken: string | null
+  fbmpAppUrl: string | null
   paymentPeriod: string
   formattedCreatedAt: string
   formattedUpdatedAt: string
@@ -79,14 +79,13 @@ const props = defineProps<{
 }>()
 
 const deleteDialogOpen = ref(false)
-const { copy, copied } = useClipboard()
-const copiedTokenId = ref<number | null>(null)
+const fbmpTokenCopied = ref(false)
 
-const copyToken = (pipeline: ImportPipelineItem) => {
-  if (!pipeline.token) return
-  copy(pipeline.token)
-  copiedTokenId.value = pipeline.id
-  setTimeout(() => { copiedTokenId.value = null }, 2000)
+const copyFbmpToken = async () => {
+  if (!props.dealer.fbmpAppAccessToken) return
+  await navigator.clipboard.writeText(props.dealer.fbmpAppAccessToken)
+  fbmpTokenCopied.value = true
+  setTimeout(() => { fbmpTokenCopied.value = false }, 2000)
 }
 
 const confirmDelete = () => {
@@ -178,6 +177,28 @@ const getStatusVariant = (status: string) => {
             </div>
           </div>
 
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">FBMP App Token</h4>
+              <div v-if="dealer.fbmpAppAccessToken" class="flex items-center gap-2">
+                <code class="text-sm bg-muted px-2 py-1 rounded font-mono break-all">{{ dealer.fbmpAppAccessToken }}</code>
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="copyFbmpToken">
+                  <Check v-if="fbmpTokenCopied" class="w-3.5 h-3.5 text-green-500" />
+                  <Copy v-else class="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              <div v-else class="text-muted-foreground text-sm italic">Not generated yet</div>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-medium text-muted-foreground">FBMP App URL</h4>
+              <a v-if="dealer.fbmpAppUrl" :href="dealer.fbmpAppUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                {{ dealer.fbmpAppUrl }}
+                <ExternalLink class="w-3 h-3" />
+              </a>
+              <div v-else class="text-muted-foreground text-sm italic">Not set</div>
+            </div>
+          </div>
+
           <div class="space-y-1">
             <h4 class="text-sm font-medium text-muted-foreground">Notes</h4>
             <p v-if="dealer.notes" class="text-sm whitespace-pre-wrap">{{ dealer.notes }}</p>
@@ -216,12 +237,11 @@ const getStatusVariant = (status: string) => {
                   <TableHead>Frequency</TableHead>
                   <TableHead>Last Executed</TableHead>
                   <TableHead>Next Run</TableHead>
-                  <TableHead>Token</TableHead>
                   <TableHead class="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableEmpty v-if="importPipelines.length === 0" :colspan="8">
+                <TableEmpty v-if="importPipelines.length === 0" :colspan="7">
                   <div class="text-center py-6">
                     <p class="text-muted-foreground text-sm">No import pipelines yet.</p>
                   </div>
@@ -239,23 +259,6 @@ const getStatusVariant = (status: string) => {
                   </TableCell>
                   <TableCell class="text-sm">{{ pipeline.last_executed_at ?? '—' }}</TableCell>
                   <TableCell class="text-sm">{{ pipeline.next_execution_at ?? '—' }}</TableCell>
-                  <TableCell>
-                    <div v-if="pipeline.token" class="flex items-center gap-2">
-                      <span class="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
-                        {{ pipeline.token.slice(0, 12) }}••••••••
-                      </span>
-                      <button
-                        type="button"
-                        class="text-muted-foreground hover:text-foreground transition-colors"
-                        :title="copiedTokenId === pipeline.id ? 'Copied!' : 'Copy token'"
-                        @click="copyToken(pipeline)"
-                      >
-                        <Check v-if="copiedTokenId === pipeline.id" class="w-3.5 h-3.5 text-green-500" />
-                        <Copy v-else class="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <span v-else class="text-muted-foreground text-sm italic">No token</span>
-                  </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" as-child>
                       <Link :href="route('dashboard.import.pipelines.show', pipeline.id)">

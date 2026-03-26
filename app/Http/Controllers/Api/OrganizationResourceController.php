@@ -7,14 +7,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ImportPipelineResult;
 use Elaitech\Import\Models\ImportPipeline;
-use Elaitech\Import\Models\ImportPipelineExecution;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 final class OrganizationResourceController extends Controller
 {
-
-   
     /**
      * Get the latest import result for the token's pipeline.
      */
@@ -29,18 +25,20 @@ final class OrganizationResourceController extends Controller
         return response()->json([
             'data' => [
                 'execution_id' => $result?->execution_id,
-                'result_data'  => $result?->data,
-                'created_at'   => $result?->created_at?->toIso8601String(),
+                'result_data' => $result?->data,
+                'created_at' => $result?->created_at?->toIso8601String(),
             ],
         ]);
     }
 
     /**
-     * Abort with 404 if the route-bound pipeline is not the one the token belongs to.
+     * Abort with 404 if the pipeline does not belong to the authenticated organization.
      */
     private function abortUnlessOwned(ImportPipeline $pipeline): void
     {
-        if ($pipeline->id !== app('auth_pipeline')->id) {
+        $organization = app('organization');
+
+        if ($pipeline->organization_uuid !== $organization->uuid) {
             abort(404, 'Pipeline not found.');
         }
     }

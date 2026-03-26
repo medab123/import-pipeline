@@ -9,39 +9,20 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Switch} from '@/components/ui/switch'
 import {Form, FormDescription, FormItem, FormLabel, FormMessage} from '@/components/ui/form'
 import {Button} from '@/components/ui/button'
-import {Clock, Key, Copy, RefreshCw, CheckCircle2} from 'lucide-vue-next'
+import {Clock} from 'lucide-vue-next'
 import {BasicInfoStepViewModel} from "@/types/generated";
 import {computed} from "vue";
-import { useClipboard } from '@vueuse/core'
 
 const props = defineProps<BasicInfoStepViewModel>()
-
-const { copy, copied } = useClipboard()
 
 const form = useForm({
   name: props.pipeline.name || '',
   description: props.pipeline.description || '',
-  token: props.pipeline.token || '',
   target_id: props.pipeline.targetId || null,
   frequency: props.pipeline.frequency || 'daily',
   start_time: props.pipeline.startTime || '09:00',
   is_active: props.pipeline.isActive ?? true,
 })
-
-const generateToken = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let random = ''
-  for (let i = 0; i < 40; i++) {
-    random += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  form.token = 'org_' + random
-}
-
-const copyToken = () => {
-  if (form.token) {
-    copy(form.token)
-  }
-}
 
 const handleSave = () => {
 
@@ -157,60 +138,6 @@ const handleSaveAndNext = () => {
                 Optional: Add a description to help team members understand this pipeline
               </p>
               <FormMessage for="description"/>
-            </FormItem>
-          </CardContent>
-        </Card>
-
-        <!-- API Token -->
-        <Card class="border-2 shadow-sm">
-          <CardHeader class="pb-4">
-            <CardTitle class="text-lg font-semibold flex items-center gap-2">
-              <Key class="w-5 h-5 text-primary"/>
-              API Token
-            </CardTitle>
-            <CardDescription class="text-sm">
-              Set the API access token for this pipeline. Use the generate button to create a secure token.
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="pt-0">
-            <FormItem class="space-y-2">
-              <FormLabel for="token" class="text-sm font-semibold">
-                Token
-              </FormLabel>
-              <div class="flex gap-2">
-                <Input
-                    id="token"
-                    v-model="form.token"
-                    type="text"
-                    placeholder="org_xxxxxxxxxxxxxxxx"
-                    class="w-full h-10 font-mono text-sm"
-                />
-                <Button
-                    type="button"
-                    variant="outline"
-                    class="h-10 shrink-0"
-                    @click="copyToken"
-                    :disabled="!form.token"
-                    title="Copy token"
-                >
-                  <CheckCircle2 v-if="copied" class="w-4 h-4 text-green-500"/>
-                  <Copy v-else class="w-4 h-4"/>
-                </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    class="h-10 shrink-0"
-                    @click="generateToken"
-                    title="Generate new token"
-                >
-                  <RefreshCw class="w-4 h-4 mr-1"/>
-                  Generate
-                </Button>
-              </div>
-              <p class="text-xs text-muted-foreground">
-                This token is used to authenticate API access to this pipeline. Keep it secure.
-              </p>
-              <FormMessage for="token"/>
             </FormItem>
           </CardContent>
         </Card>

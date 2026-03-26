@@ -29,7 +29,6 @@ class BasicInfoStep extends AbstractImportPipelineStep
             'frequency' => $data['frequency'] ?? $pipeline->frequency,
             'is_active' => $data['auto_start'] ?? $pipeline->is_active,
             'start_time' => $data['start_time'],
-            'token' => $data['token'] ?? $pipeline->token,
             'updated_by' => auth()->id(),
         ];
 
@@ -48,7 +47,7 @@ class BasicInfoStep extends AbstractImportPipelineStep
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'token' => ['nullable', 'string', 'max:255'],
+
             'target_id' => ['required', 'integer'],
             'frequency' => ['required', 'string', 'in:once,daily,weekly,monthly'],
             'start_time' => ['nullable', 'date_format:H:i'],

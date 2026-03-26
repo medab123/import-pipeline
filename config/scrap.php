@@ -12,4 +12,10 @@ return [
         'timeout' => env('SCRAP_FTP_TIMEOUT', 10),
     ],
 
+    'fbmp' => [
+        'base_url' => env('FBMP_API_BASE_URL', 'https://api.hznimaak.com/api/generateToken'),
+        'auth_token' => env('FBMP_API_AUTH_TOKEN'),
+        'default_limit_account' => env('FBMP_DEFAULT_LIMIT_ACCOUNT', 999),
+    ],
+
 ];

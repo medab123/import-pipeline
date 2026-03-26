@@ -196,7 +196,6 @@ lastExecutedAt: string;
 formattedLastExecutedAt: string;
 nextExecutionAt: string;
 formattedNextExecutionAt: string;
-token: string;
 config: any;
 };
 export type PreviewStepViewModel = {

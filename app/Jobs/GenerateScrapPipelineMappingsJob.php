@@ -97,7 +97,7 @@ final class GenerateScrapPipelineMappingsJob implements ShouldQueue
             ]);
         }
 
-        ProcessImportPipelineJob::dispatch($this);
+        ProcessImportPipelineJob::dispatch($this->pipeline);
 
         Log::info('GenerateScrapPipelineMappingsJob: mappings generated successfully.', [
             'pipeline_id' => $this->pipeline->id,

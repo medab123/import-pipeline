@@ -32,6 +32,7 @@ class Organization extends Model
     protected $fillable = [
         'name',
         'slug',
+        'token',
         'settings',
     ];
 
@@ -58,5 +59,10 @@ class Organization extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'organization_uuid', 'uuid');
+    }
+
+    public function organizationTokens(): HasMany
+    {
+        return $this->hasMany(OrganizationToken::class, 'organization_uuid', 'uuid');
     }
 }

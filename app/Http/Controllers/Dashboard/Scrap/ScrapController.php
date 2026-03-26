@@ -13,7 +13,9 @@ use App\Http\ViewModels\Dashboard\Scrap\EditScrapViewModel;
 use App\Http\ViewModels\Dashboard\Scrap\ListScrapViewModel;
 use App\Http\ViewModels\Dashboard\Scrap\ShowScrapViewModel;
 use App\Jobs\GenerateScrapPipelineMappingsJob;
+use App\Models\Dealer;
 use App\Models\Scrap;
+use App\Services\FbmpTokenService;
 use App\Services\Import\CreateScrapPipelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,8 +54,11 @@ final class ScrapController extends Controller
         return inertia('Dashboard/Scrap/Create', new CreateScrapViewModel);
     }
 
-    public function store(StoreScrapRequest $request, CreateScrapPipelineService $pipelineService): RedirectResponse
-    {
+    public function store(
+        StoreScrapRequest $request,
+        CreateScrapPipelineService $pipelineService,
+        FbmpTokenService $fbmpTokenService,
+    ): RedirectResponse {
         $this->authorize('create', Scrap::class);
 
         $scrap = Scrap::create([
@@ -66,9 +71,27 @@ final class ScrapController extends Controller
         $pipeline = $pipelineService->createForScrap($scrap);
         GenerateScrapPipelineMappingsJob::dispatch($pipeline);
 
+        // Generate an FBMP app token for the dealer if they don't already have one.
+        $dealer = Dealer::find($scrap->dealer_id);
+
+        if ($dealer && empty($dealer->fbmp_app_access_token)) {
+            $userEmail = $this->buildFbmpUserEmail($dealer);
+            $fbmpTokenService->generateAndSave($dealer, $userEmail);
+        }
+
         $this->toast('Scrap source created successfully. Import pipeline is being configured in the background.');
 
         return back();
+    }
+
+    /**
+     * Build a unique email identifier for the FBMP API based on the dealer name.
+     */
+    private function buildFbmpUserEmail(Dealer $dealer): string
+    {
+        $slug = str($dealer->name)->slug('_')->value();
+
+        return $slug.'@gmail.com';
     }
 
     public function show(Scrap $scrap): InertiaResponse

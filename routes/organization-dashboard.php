@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Dashboard\Organization\OrganizationTokenController;
 use App\Http\Controllers\Dashboard\Organization\TargetFieldController;
 use App\Http\Controllers\Dashboard\Organization\UserController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,8 @@ Route::middleware(['auth', 'organization', 'permission:manage organization'])
         Route::resource('target-fields', TargetFieldController::class)
             ->whereNumber('target_field');
 
-        // API Tokens management has been removed.
-        // Tokens are now set directly on each pipeline via the pipeline stepper.
+        // API Tokens
+        Route::get('/tokens', [OrganizationTokenController::class, 'index'])->name('tokens.index');
+        Route::post('/tokens', [OrganizationTokenController::class, 'store'])->name('tokens.store');
+        Route::delete('/tokens/{organizationToken}', [OrganizationTokenController::class, 'destroy'])->name('tokens.destroy');
     });

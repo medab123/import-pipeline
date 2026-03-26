@@ -111,11 +111,6 @@ final class PipelineViewModel extends ViewModel
         return $this->pipeline->next_execution_at?->format('Y-m-d H:i:s');
     }
 
-    public function token(): ?string
-    {
-        return $this->pipeline->token;
-    }
-
     public function config()
     {
         return $this->pipeline->config;

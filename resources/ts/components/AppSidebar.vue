@@ -121,6 +121,10 @@ const data = computed(() => {
                     title: "Users",
                     url: route('dashboard.organization.users.index'),
                 },
+                {
+                    title: "API Tokens",
+                    url: route('dashboard.organization.tokens.index'),
+                },
             ],
         })
 
