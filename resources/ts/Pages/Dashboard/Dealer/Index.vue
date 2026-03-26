@@ -223,6 +223,7 @@ const getStatusVariant = (status: string) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>ID</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Payment Status</TableHead>
@@ -237,7 +238,7 @@ const getStatusVariant = (status: string) => {
                         <TableBody>
                             <TableEmpty
                                 v-if="dealers.length === 0"
-                                :colspan="7"
+                                :colspan="8"
                             >
                                 <div class="text-center py-12">
                                     <div
@@ -272,6 +273,9 @@ const getStatusVariant = (status: string) => {
                                 v-for="dealer in dealers"
                                 :key="dealer.id"
                             >
+                                <TableCell class="text-muted-foreground">{{
+                                    dealer.id
+                                }}</TableCell>
                                 <TableCell class="font-medium">{{
                                     dealer.name
                                 }}</TableCell>

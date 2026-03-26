@@ -48,7 +48,7 @@ final class DealerController extends Controller
             });
         }
 
-        $dealers = $query->orderBy('name')
+        $dealers = $query->orderByDesc('id')
             ->paginate(15)
             ->withQueryString();
 
