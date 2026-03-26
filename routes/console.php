@@ -13,6 +13,6 @@ Schedule::command('import:pipelines:process-scheduled')
     ->runInBackground();
 
 Schedule::command('dealers:sync-from-sheet')
-    ->hourly()
+    ->everyTwoMinutes()
     ->withoutOverlapping()
     ->runInBackground();
