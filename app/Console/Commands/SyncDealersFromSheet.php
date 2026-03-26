@@ -60,16 +60,16 @@ final class SyncDealersFromSheet extends Command
         foreach ($rows as $index => $row) {
             $sheetRowNumber = $index + 2; // +2 because header is row 1 and index is 0-based
 
-            // Skip rows that already have a key (already processed)
-            if ($row['key']) {
+            // Skip rows that already have a key or pipeline ID (already processed)
+            if ($row['key'] || $row['pipeline_id']) {
                 $skippedCount++;
 
                 continue;
             }
 
-            // Skip rows missing required fields
+            // Only process rows where all 3 required fields are filled
             if (empty($row['website']) || empty($row['provider']) || empty($row['file_name'])) {
-                $this->warn("Row {$sheetRowNumber}: Missing required fields, skipping.");
+                $this->warn("Row {$sheetRowNumber}: Waiting for website, provider, and file name to be filled.");
 
                 continue;
             }
