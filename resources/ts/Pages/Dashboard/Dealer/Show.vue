@@ -81,11 +81,40 @@ const props = defineProps<{
 const deleteDialogOpen = ref(false)
 const fbmpTokenCopied = ref(false)
 
+const fallbackCopy = (text: string): boolean => {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  let success = false
+  try {
+    success = document.execCommand('copy')
+  } catch {
+    success = false
+  }
+  document.body.removeChild(textarea)
+  return success
+}
+
 const copyFbmpToken = async () => {
   if (!props.dealer.fbmpAppAccessToken) return
-  await navigator.clipboard.writeText(props.dealer.fbmpAppAccessToken)
-  fbmpTokenCopied.value = true
-  setTimeout(() => { fbmpTokenCopied.value = false }, 2000)
+  let success = false
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(props.dealer.fbmpAppAccessToken)
+      success = true
+    } catch {
+      success = fallbackCopy(props.dealer.fbmpAppAccessToken)
+    }
+  } else {
+    success = fallbackCopy(props.dealer.fbmpAppAccessToken)
+  }
+  if (success) {
+    fbmpTokenCopied.value = true
+    setTimeout(() => { fbmpTokenCopied.value = false }, 2000)
+  }
 }
 
 const confirmDelete = () => {

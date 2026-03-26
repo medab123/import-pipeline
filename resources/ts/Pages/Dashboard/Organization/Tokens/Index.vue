@@ -45,7 +45,35 @@ import {
   Check,
   AlertTriangle,
 } from 'lucide-vue-next'
-import { useClipboard } from '@vueuse/core'
+// Fallback clipboard copy that works on HTTP (non-secure contexts)
+const fallbackCopy = (text: string): boolean => {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  let success = false
+  try {
+    success = document.execCommand('copy')
+  } catch {
+    success = false
+  }
+  document.body.removeChild(textarea)
+  return success
+}
+
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      return fallbackCopy(text)
+    }
+  }
+  return fallbackCopy(text)
+}
 
 interface ApiToken {
   id: number
@@ -76,17 +104,16 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { copy, copied } = useClipboard()
-
 // --- Copy token per row ---
 const copiedTokenId = ref<number | null>(null)
+const newTokenCopied = ref(false)
 
-const copyToken = (token: ApiToken) => {
-  copy(token.token)
-  copiedTokenId.value = token.id
-  setTimeout(() => {
-    copiedTokenId.value = null
-  }, 2000)
+const copyToken = async (token: ApiToken) => {
+  const success = await copyToClipboard(token.token)
+  if (success) {
+    copiedTokenId.value = token.id
+    setTimeout(() => { copiedTokenId.value = null }, 2000)
+  }
 }
 
 // --- Create Token Dialog ---
@@ -117,9 +144,13 @@ const submitCreate = () => {
 // --- Token Created Dialog (show token once) ---
 const tokenCreatedDialogOpen = ref(!!props.newToken)
 
-const copyNewToken = () => {
+const copyNewToken = async () => {
   if (props.newToken) {
-    copy(props.newToken)
+    const success = await copyToClipboard(props.newToken)
+    if (success) {
+      newTokenCopied.value = true
+      setTimeout(() => { newTokenCopied.value = false }, 2000)
+    }
   }
 }
 
@@ -366,9 +397,9 @@ const confirmDelete = () => {
               class="shrink-0"
               @click="copyNewToken"
             >
-              <Check v-if="copied" class="w-4 h-4 text-green-500" />
+              <Check v-if="newTokenCopied" class="w-4 h-4 text-green-500" />
               <Copy v-else class="w-4 h-4" />
-              <span class="ml-1">{{ copied ? 'Copied' : 'Copy' }}</span>
+              <span class="ml-1">{{ newTokenCopied ? 'Copied' : 'Copy' }}</span>
             </Button>
           </div>
           <div class="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
