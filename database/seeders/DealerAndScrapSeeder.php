@@ -66,7 +66,6 @@ class DealerAndScrapSeeder extends Seeder
                 // Use specific organization UUID instead of creating
                 $orgUuid = '07301d3f-9b46-43ed-8861-044209d06b54';
 
-
                 // Determine Status (Index 3) - Enum mapping
                 $rawStatus = strtolower(trim($data[3] ?? ''));
                 $status = 'active'; // Default

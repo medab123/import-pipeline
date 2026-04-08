@@ -7,23 +7,24 @@ use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Contracts\HasTools;
-use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Promptable;
 use Stringable;
 
-class ImportMapping implements Agent, Conversational, HasTools, HasStructuredOutput
+class ImportMapping implements Agent, Conversational, HasStructuredOutput, HasTools
 {
     use Promptable;
 
-
     private array $targetFields;
+
     private array $sourceFields;
+
     /**
      * Allowed source fields (Feed Keys)
      */
     public function setSourceFields(array $sourceFields): static
     {
         $this->sourceFields = $sourceFields;
+
         return $this;
     }
 
@@ -33,6 +34,7 @@ class ImportMapping implements Agent, Conversational, HasTools, HasStructuredOut
     public function setTargetFields(array $targetFields): static
     {
         $this->targetFields = $targetFields;
+
         return $this;
     }
 

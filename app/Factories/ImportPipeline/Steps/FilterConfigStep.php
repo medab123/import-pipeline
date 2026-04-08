@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Factories\ImportPipeline\Steps;
 
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Factories\ImportPipeline\AbstractImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\Stepper\Steps\FilterConfigStepViewModel;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Spatie\ViewModels\ViewModel;
 

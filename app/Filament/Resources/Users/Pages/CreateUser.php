@@ -15,7 +15,7 @@ class CreateUser extends CreateRecord
     {
         // Store role separately before it gets removed
         $this->role = $data['role'] ?? null;
-        
+
         // Remove role from data as it's not a direct model attribute
         unset($data['role']);
 
@@ -25,7 +25,7 @@ class CreateUser extends CreateRecord
     protected function afterCreate(): void
     {
         $role = $this->role ?? null;
-        
+
         if ($role) {
             $this->record->assignRole($role);
         }

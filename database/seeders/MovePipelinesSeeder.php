@@ -50,6 +50,7 @@ final class MovePipelinesSeeder extends Seeder
                         $this->movePipelineAndRelatedRecords($pipeline, $defaultOrganization);
                         $movedPipelinesCount++;
                     }
+
                     continue;
                 }
 
@@ -57,6 +58,7 @@ final class MovePipelinesSeeder extends Seeder
 
                 if ($pipelines->isEmpty()) {
                     $this->command->info("Organization {$organization->name} has no pipelines. Skipping.");
+
                     continue;
                 }
 

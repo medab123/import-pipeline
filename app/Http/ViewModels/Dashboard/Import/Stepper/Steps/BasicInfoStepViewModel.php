@@ -2,10 +2,10 @@
 
 namespace App\Http\ViewModels\Dashboard\Import\Stepper\Steps;
 
-use Elaitech\Import\Enums\ImportPipelineFrequency;
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\Stepper\CreateStepViewModel;
+use Elaitech\Import\Enums\ImportPipelineFrequency;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\ViewModels\ViewModel;

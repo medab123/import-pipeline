@@ -33,16 +33,16 @@ final class CreateScrapPipelineService
 
         // forceFill bypasses the vendor model's $fillable so token and
         // organization_uuid (both absent from vendor fillable) are persisted.
-        $pipeline = (new ImportPipeline())->forceFill([
-            'name'              => $pipelineName,
-            'target_id'         => $scrap->dealer_id,
-            'frequency'         => ImportPipelineFrequency::DAILY,
-            'start_time'        => now()->format('H:i'),
-            'is_active'         => true,
-            'token'             => 'org_'.Str::random(40),
+        $pipeline = (new ImportPipeline)->forceFill([
+            'name' => $pipelineName,
+            'target_id' => $scrap->dealer_id,
+            'frequency' => ImportPipelineFrequency::DAILY,
+            'start_time' => now()->format('H:i'),
+            'is_active' => true,
+            'token' => 'org_'.Str::random(40),
             'organization_uuid' => $scrap->organization_uuid,
-            'created_by'        => Auth::id(),
-            'updated_by'        => Auth::id(),
+            'created_by' => Auth::id(),
+            'updated_by' => Auth::id(),
         ]);
         $pipeline->save();
 

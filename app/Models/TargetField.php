@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\TargetFieldRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +20,12 @@ class TargetField extends Model
         'category',
         'description',
         'type',
-        'model'
+        'model',
+        'role',
+    ];
+
+    protected $casts = [
+        'role' => TargetFieldRole::class,
     ];
 
     public function organization(): BelongsTo

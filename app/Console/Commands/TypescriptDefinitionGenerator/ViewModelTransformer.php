@@ -8,12 +8,14 @@ use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use Spatie\TypeScriptTransformer\Exceptions\InvalidDefaultTypeReplacer;
 use Spatie\TypeScriptTransformer\Structures\MissingSymbolsCollection;
 use Spatie\TypeScriptTransformer\Structures\TransformedType;
 use Spatie\TypeScriptTransformer\Transformers\Transformer;
 use Spatie\TypeScriptTransformer\Transformers\TransformsTypes;
 use Spatie\TypeScriptTransformer\TypeProcessors\DtoCollectionTypeProcessor;
 use Spatie\TypeScriptTransformer\TypeProcessors\ReplaceDefaultsTypeProcessor;
+use Spatie\TypeScriptTransformer\TypeProcessors\TypeProcessor;
 use Spatie\TypeScriptTransformer\TypeScriptTransformerConfig;
 use Spatie\ViewModels\ViewModel;
 
@@ -29,9 +31,9 @@ final class ViewModelTransformer implements Transformer
     }
 
     /**
-     * @param  \ReflectionClass<\Spatie\ViewModels\ViewModel>  $class
+     * @param  ReflectionClass<ViewModel>  $class
      *
-     * @throws \Spatie\TypeScriptTransformer\Exceptions\InvalidDefaultTypeReplacer
+     * @throws InvalidDefaultTypeReplacer
      */
     public function transform(ReflectionClass $class, string $name): ?TransformedType
     {
@@ -55,9 +57,9 @@ final class ViewModelTransformer implements Transformer
     }
 
     /**
-     * @param  \ReflectionClass<\Spatie\ViewModels\ViewModel>  $class
+     * @param  ReflectionClass<ViewModel>  $class
      *
-     * @throws \Spatie\TypeScriptTransformer\Exceptions\InvalidDefaultTypeReplacer
+     * @throws InvalidDefaultTypeReplacer
      */
     private function transformMethods(ReflectionClass $class, MissingSymbolsCollection $missingSymbols): string
     {
@@ -86,9 +88,9 @@ final class ViewModelTransformer implements Transformer
     }
 
     /**
-     * @return array<\Spatie\TypeScriptTransformer\TypeProcessors\TypeProcessor>
+     * @return array<TypeProcessor>
      *
-     * @throws \Spatie\TypeScriptTransformer\Exceptions\InvalidDefaultTypeReplacer
+     * @throws InvalidDefaultTypeReplacer
      */
     private function typeProcessors(): array
     {
@@ -102,9 +104,9 @@ final class ViewModelTransformer implements Transformer
     }
 
     /**
-     * @param  \ReflectionClass<\Spatie\ViewModels\ViewModel>  $class
+     * @param  ReflectionClass<ViewModel>  $class
      *
-     * @throws \Spatie\TypeScriptTransformer\Exceptions\InvalidDefaultTypeReplacer
+     * @throws InvalidDefaultTypeReplacer
      */
     private function transformProperties(ReflectionClass $class, MissingSymbolsCollection $missingSymbols): string
     {

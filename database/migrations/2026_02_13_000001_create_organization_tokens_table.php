@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->uuid('organization_uuid');
             $table->foreign('organization_uuid')->references('uuid')->on('organizations')->cascadeOnDelete();
-            
+
             $table->string('name');
             $table->string('token', 64)->unique(); // We'll store a hashed version
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();
-            
+
             $table->timestamps();
         });
     }

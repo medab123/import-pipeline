@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\Import;
 
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\PipelineStage;
 use App\Factories\ImportPipeline\ImportPipelineStepFactory;
 use App\Http\ViewModels\Dashboard\Import\Stepper\Steps\TestFilterViewModel;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Core\DTOs\FilterRuleData;
 use Elaitech\Import\Services\Pipeline\Contracts\ImportPipelineInterface;
+use Elaitech\Import\Services\Pipeline\DTOs\ImportPipelineConfig;
 use Psr\Log\LoggerInterface;
 use Spatie\ViewModels\ViewModel;
 
@@ -67,7 +68,7 @@ final class TestFilterController extends AbstractTestController
         ]);
 
         try {
-            $config = \Elaitech\Import\Services\Pipeline\DTOs\ImportPipelineConfig::fromModel($pipeline, false);
+            $config = ImportPipelineConfig::fromModel($pipeline, false);
             $result = $this->importPipelineService->executeToStage($config, PipelineStage::FILTER);
 
             return [

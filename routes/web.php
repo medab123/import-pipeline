@@ -1,16 +1,15 @@
 <?php
 
 use App\Ai\Agents\ImportMapping;
+use App\Models\TargetField;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Pipeline\Services\FeedKeysService;
-use Illuminate\Support\Facades\Route;
-
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-
 Route::get('test', function () {
-    $targetFields = \App\Models\TargetField::select('field')->pluck('field')->toArray();
+    $targetFields = TargetField::select('field')->pluck('field')->toArray();
     $sourceFields = app(FeedKeysService::class)->getFeedKeys(ImportPipeline::find(6));
     $model = ImportMapping::make();
     $model->setSourceFields($sourceFields);
@@ -18,7 +17,6 @@ Route::get('test', function () {
     $res = $model->prompt('');
     dd($res->toArray());
 });
-
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -43,7 +41,7 @@ Route::get('/dashboard', function () {
     abort(403, 'You do not have permission to access the dashboard.');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-include __DIR__ . '/import-dashboard.php';
-include __DIR__ . '/product-dashboard.php';
-include __DIR__ . '/organization-dashboard.php';
-include __DIR__ . '/dealer-dashboard.php';
+include __DIR__.'/import-dashboard.php';
+include __DIR__.'/product-dashboard.php';
+include __DIR__.'/organization-dashboard.php';
+include __DIR__.'/dealer-dashboard.php';

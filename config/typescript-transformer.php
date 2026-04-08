@@ -1,5 +1,16 @@
 <?php
 
+use App\Console\Commands\TypescriptDefinitionGenerator\ViewModelTransformer;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+use Spatie\LaravelTypeScriptTransformer\Transformers\DtoTransformer;
+use Spatie\LaravelTypeScriptTransformer\Transformers\SpatieStateTransformer;
+use Spatie\TypeScriptTransformer\Collectors\DefaultCollector;
+use Spatie\TypeScriptTransformer\Collectors\EnumCollector;
+use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
+use Spatie\TypeScriptTransformer\Transformers\SpatieEnumTransformer;
+use Spatie\TypeScriptTransformer\Writers\ModuleWriter;
+
 return [
     /*
      * The paths where typescript-transformer will look for PHP classes
@@ -17,8 +28,8 @@ return [
      */
 
     'collectors' => [
-        Spatie\TypeScriptTransformer\Collectors\DefaultCollector::class,
-        Spatie\TypeScriptTransformer\Collectors\EnumCollector::class,
+        DefaultCollector::class,
+        EnumCollector::class,
     ],
 
     /*
@@ -27,11 +38,11 @@ return [
      */
 
     'transformers' => [
-        Spatie\LaravelTypeScriptTransformer\Transformers\SpatieStateTransformer::class,
-        \App\Console\Commands\TypescriptDefinitionGenerator\ViewModelTransformer::class,
-        Spatie\TypeScriptTransformer\Transformers\EnumTransformer::class,
-        Spatie\TypeScriptTransformer\Transformers\SpatieEnumTransformer::class,
-        Spatie\LaravelTypeScriptTransformer\Transformers\DtoTransformer::class,
+        SpatieStateTransformer::class,
+        ViewModelTransformer::class,
+        EnumTransformer::class,
+        SpatieEnumTransformer::class,
+        DtoTransformer::class,
     ],
 
     /*
@@ -43,8 +54,8 @@ return [
     'default_type_replacements' => [
         DateTime::class => 'string',
         DateTimeImmutable::class => 'string',
-        Carbon\CarbonInterface::class => 'string',
-        Carbon\CarbonImmutable::class => 'string',
+        CarbonInterface::class => 'string',
+        CarbonImmutable::class => 'string',
         Carbon\Carbon::class => 'string',
     ],
 
@@ -60,7 +71,7 @@ return [
      * But you can also use the `ModuleWriter` or implement your own.
      */
 
-    'writer' => Spatie\TypeScriptTransformer\Writers\ModuleWriter::class,
+    'writer' => ModuleWriter::class,
 
     /*
      * The generated TypeScript file can be formatted. We ship a Prettier formatter

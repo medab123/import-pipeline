@@ -2,12 +2,13 @@
 
 namespace App\Factories\ImportPipeline;
 
+use Elaitech\Import\Contracts\Services\ImportDashboard\ImportDashboardServiceInterface;
 use Elaitech\Import\Models\ImportPipeline;
 use Spatie\ViewModels\ViewModel;
 
 interface ImportPipelineStepInterface
 {
-    public \Elaitech\Import\Contracts\Services\ImportDashboard\ImportDashboardServiceInterface $importDashboardService {
+    public ImportDashboardServiceInterface $importDashboardService {
         set;
     }
 

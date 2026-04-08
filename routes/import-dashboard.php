@@ -35,6 +35,9 @@ Route::middleware(['auth', 'organization', 'permission:view pipelines'])->prefix
     Route::get('/pipelines/{pipeline}/executions', [PipelineController::class, 'executions'])->name('pipelines.executions');
     Route::get('/pipelines/{pipeline}/executions/{execution}', [PipelineController::class, 'showExecution'])->name('pipelines.executions.show');
     Route::get('/pipelines/{pipeline}/executions/{execution}/results', [PipelineController::class, 'showExecutionResults'])->name('pipelines.executions.results');
+    Route::get('/pipelines/{pipeline}/products', [PipelineController::class, 'products'])->name('pipelines.products');
+    Route::get('/pipelines/{pipeline}/products/{inventory}', [PipelineController::class, 'showProduct'])->name('pipelines.products.show');
+    Route::delete('/pipelines/{pipeline}/products/{inventory}', [PipelineController::class, 'destroyProduct'])->name('pipelines.products.destroy');
     Route::get('/pipelines/{pipeline}/activity-logs', [PipelineController::class, 'activityLogs'])->name('pipelines.activity-logs');
     Route::get('/pipelines/{pipeline}/activity-logs/{activity}', [PipelineController::class, 'showActivityLog'])->name('pipelines.activity-logs.show');
     Route::get('/pipelines/{pipeline}/export', [PipelineController::class, 'export'])->name('pipelines.export');

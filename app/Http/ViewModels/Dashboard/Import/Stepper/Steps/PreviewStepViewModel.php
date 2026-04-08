@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\ViewModels\Dashboard\Import\Stepper\Steps;
 
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\Stepper\CreateStepViewModel;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Pipeline\Contracts\ImportPipelineInterface;
 use Elaitech\Import\Services\Pipeline\DTOs\ImportPipelineConfig;

@@ -24,7 +24,7 @@ class EditUser extends EditRecord
         // Load the user's current role
         $user = $this->record;
         $roles = $user->getRoleNames();
-        
+
         if ($roles->isNotEmpty()) {
             $data['role'] = $roles->first();
         }
@@ -36,7 +36,7 @@ class EditUser extends EditRecord
     {
         // Store role separately before it gets removed
         $this->role = $data['role'] ?? null;
-        
+
         // Remove role from data as it's not a direct model attribute
         unset($data['role']);
 
@@ -47,7 +47,7 @@ class EditUser extends EditRecord
     {
         $role = $this->role ?? null;
         $user = $this->record;
-        
+
         if ($role !== null) {
             // Only update roles if a role was explicitly selected
             // This allows clearing the role by selecting nothing (if you want that behavior)

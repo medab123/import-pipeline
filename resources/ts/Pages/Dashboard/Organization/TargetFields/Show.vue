@@ -23,6 +23,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
+const roleLabels: Record<string, string> = {
+  serial_number: 'Serial Number',
+  images: 'Images',
+}
+
 const props = defineProps<{
     targetField: {
         id: number
@@ -32,6 +37,7 @@ const props = defineProps<{
         description?: string
         type: string
         model?: string
+        role?: string | null
         created_at: string
         updated_at: string
     }
@@ -103,10 +109,17 @@ const confirmDelete = () => {
                     </div>
                 </div>
 
-                <div class="space-y-1">
-                    <h4 class="text-sm font-medium text-muted-foreground">Related Model</h4>
-                    <div v-if="targetField.model" class="font-mono text-sm">{{ targetField.model }}</div>
-                    <div v-else class="text-muted-foreground text-sm italic">None</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-medium text-muted-foreground">Related Model</h4>
+                        <div v-if="targetField.model" class="font-mono text-sm">{{ targetField.model }}</div>
+                        <div v-else class="text-muted-foreground text-sm italic">None</div>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-medium text-muted-foreground">Field Role</h4>
+                        <Badge v-if="targetField.role" variant="default">{{ roleLabels[targetField.role] || targetField.role }}</Badge>
+                        <div v-else class="text-muted-foreground text-sm italic">None</div>
+                    </div>
                 </div>
 
                 <div class="space-y-1">
@@ -127,7 +140,7 @@ const confirmDelete = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Target Field?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <span class="font-semibold">{{ targetField.label }}</span>? 
+            Are you sure you want to delete <span class="font-semibold">{{ targetField.label }}</span>?
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard\Import;
 
 use App\Ai\Agents\ImportMapping;
-use Elaitech\Import\Enums\ImportPipelineFrequency;
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\ToastNotificationVariant;
 use App\Factories\ImportPipeline\ImportPipelineStepFactory;
 use App\Http\Controllers\Controller;
+use Elaitech\Import\Enums\ImportPipelineFrequency;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\ImportDashboard\ImportDashboardService;
 use Elaitech\Import\Services\Pipeline\Services\FeedKeysService;
@@ -217,7 +217,7 @@ final class StepperPipelineController extends Controller
 
             // Transform the AI response to match the expected format
             $fieldMappings = $result['field_mappings'];
-            
+
             return response()->json([
                 'success' => true,
                 'field_mappings' => $fieldMappings,

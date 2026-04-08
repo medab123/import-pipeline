@@ -8,11 +8,13 @@ use App\Models\Dealer;
 use App\Models\Organization;
 use App\Models\PaymentTransaction;
 use App\Models\Scrap;
+use App\Models\User;
 use App\Observers\ScrapObserver;
 use App\Policies\DealerPolicy;
 use App\Policies\ImportPipelinePolicy;
 use App\Policies\PaymentTransactionPolicy;
 use App\Policies\ScrapPolicy;
+use App\Policies\UserPolicy;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
 use Elaitech\Import\Models\ImportPipelineExecution;
@@ -98,7 +100,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(ImportPipeline::class, ImportPipelinePolicy::class);
-        Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Dealer::class, DealerPolicy::class);
         Gate::policy(PaymentTransaction::class, PaymentTransactionPolicy::class);
         Gate::policy(Scrap::class, ScrapPolicy::class);

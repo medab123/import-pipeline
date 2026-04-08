@@ -29,4 +29,7 @@ Route::middleware('organization-auth')->prefix('v1')->name('api.v1.')->group(fun
     Route::get('/pipelines/{pipeline}/executions', [OrganizationResourceController::class, 'executions'])->name('pipelines.executions.index');
     Route::get('/pipelines/{pipeline}/executions/{execution}', [OrganizationResourceController::class, 'execution'])->name('pipelines.executions.show');
     Route::get('/pipelines/{pipeline}/results', [OrganizationResourceController::class, 'executionResults'])->name('pipelines.executions.results');
+
+    // Products (inventory)
+    Route::get('/pipelines/{pipeline}/products', [OrganizationResourceController::class, 'products'])->name('pipelines.products.index');
 });

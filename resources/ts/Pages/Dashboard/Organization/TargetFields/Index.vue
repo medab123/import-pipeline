@@ -50,7 +50,13 @@ interface TargetField {
   description?: string
   type: string
   model?: string
+  role?: string | null
   created_at: string
+}
+
+const roleLabels: Record<string, string> = {
+  serial_number: 'Serial Number',
+  images: 'Images',
 }
 
 interface Props {
@@ -97,7 +103,7 @@ const openDeleteDialog = (field: TargetField) => {
 }
 
 const confirmDelete = () => {
-    if (!fieldToDelete.value) return 
+    if (!fieldToDelete.value) return
 
     router.delete(route('dashboard.organization.target-fields.destroy', fieldToDelete.value.id), {
         onSuccess: () => {
@@ -157,7 +163,7 @@ const getTypeBadgeVariant = (type: string) => {
         case 'string': return 'default'
         case 'integer': return 'secondary'
         case 'boolean': return 'outline'
-        case 'date': 
+        case 'date':
         case 'datetime': return 'outline'
         default: return 'secondary'
     }
@@ -229,11 +235,12 @@ const getTypeBadgeVariant = (type: string) => {
                         <TableHead>Category</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Model</TableHead>
+                        <TableHead>Role</TableHead>
                         <TableHead class="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableEmpty v-if="targetFields.data.length === 0" :colspan="6">
+                    <TableEmpty v-if="targetFields.data.length === 0" :colspan="7">
                          <div class="text-center py-12">
                             <div class="bg-muted/50 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                                 <Database class="w-6 h-6 text-muted-foreground" />
@@ -258,6 +265,10 @@ const getTypeBadgeVariant = (type: string) => {
                             <Badge :variant="getTypeBadgeVariant(field.type)">{{ field.type }}</Badge>
                         </TableCell>
                         <TableCell class="text-muted-foreground text-sm">{{ field.model || '-' }}</TableCell>
+                        <TableCell>
+                            <Badge v-if="field.role" variant="default" class="text-xs">{{ roleLabels[field.role] || field.role }}</Badge>
+                            <span v-else class="text-muted-foreground">-</span>
+                        </TableCell>
                         <TableCell class="text-right">
                              <div class="flex justify-end gap-2">
                                 <Button variant="ghost" size="icon" as-child>
@@ -291,7 +302,7 @@ const getTypeBadgeVariant = (type: string) => {
                 </TableBody>
             </Table>
         </div>
-        
+
         <div v-if="targetFields.total > targetFields.perPage" class="mt-4">
              <Pagination :paginator="targetFields" />
         </div>
@@ -303,7 +314,7 @@ const getTypeBadgeVariant = (type: string) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Target Field?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <span class="font-semibold">{{ fieldToDelete?.label }}</span>? 
+            Are you sure you want to delete <span class="font-semibold">{{ fieldToDelete?.label }}</span>?
             This might affect existing import pipelines relying on this field.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -321,13 +332,14 @@ const getTypeBadgeVariant = (type: string) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Import Target Fields from CSV</AlertDialogTitle>
           <AlertDialogDescription>
-            Upload a CSV file to import target fields. The file should contain columns: 
-            <span class="font-mono text-xs">field</span>, 
-            <span class="font-mono text-xs">label</span>, 
-            <span class="font-mono text-xs">type</span>, 
-            <span class="font-mono text-xs">category</span> (optional), 
-            <span class="font-mono text-xs">description</span> (optional), 
-            <span class="font-mono text-xs">model</span> (optional).
+            Upload a CSV file to import target fields. The file should contain columns:
+            <span class="font-mono text-xs">field</span>,
+            <span class="font-mono text-xs">label</span>,
+            <span class="font-mono text-xs">type</span>,
+            <span class="font-mono text-xs">category</span> (optional),
+            <span class="font-mono text-xs">description</span> (optional),
+            <span class="font-mono text-xs">model</span> (optional),
+            <span class="font-mono text-xs">role</span> (optional: serial_number, images).
             <br><br>
             Existing fields with the same field name will be updated.
           </AlertDialogDescription>
@@ -345,7 +357,7 @@ const getTypeBadgeVariant = (type: string) => {
           </p>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel @click="() => { 
+          <AlertDialogCancel @click="() => {
             importFile.value = null
             if (importFileInput.value) {
               importFileInput.value.value = ''

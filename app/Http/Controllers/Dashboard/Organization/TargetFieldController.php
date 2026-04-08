@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TargetField;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -28,9 +29,9 @@ final class TargetFieldController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('field', 'like', '%' . $request->search . '%')
-                  ->orWhere('label', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
+                $q->where('field', 'like', '%'.$request->search.'%')
+                    ->orWhere('label', 'like', '%'.$request->search.'%')
+                    ->orWhere('category', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -67,13 +68,14 @@ final class TargetFieldController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('target_fields')->where('organization_uuid', $organization->uuid)
+                Rule::unique('target_fields')->where('organization_uuid', $organization->uuid),
             ],
             'label' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],
             'type' => ['required', 'string', 'in:string,integer,boolean,float,date,datetime'],
             'model' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'string', 'in:serial_number,images'],
         ]);
 
         TargetField::create([
@@ -135,6 +137,7 @@ final class TargetFieldController extends Controller
             'description' => ['nullable', 'string', 'max:500'],
             'type' => ['required', 'string', 'in:string,integer,boolean,float,date,datetime'],
             'model' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'string', 'in:serial_number,images'],
         ]);
 
         $targetField->update($validated);
@@ -194,7 +197,7 @@ final class TargetFieldController extends Controller
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write headers
-            fputcsv($file, ['field', 'label', 'category', 'description', 'type', 'model']);
+            fputcsv($file, ['field', 'label', 'category', 'description', 'type', 'model', 'role']);
 
             // Write data rows
             foreach ($targetFields as $field) {
@@ -205,6 +208,7 @@ final class TargetFieldController extends Controller
                     $field->description ?? '',
                     $field->type,
                     $field->model ?? '',
+                    $field->role?->value ?? '',
                 ]);
             }
 
@@ -226,7 +230,7 @@ final class TargetFieldController extends Controller
         ]);
 
         try {
-            /** @var \Illuminate\Http\UploadedFile $file */
+            /** @var UploadedFile $file */
             $file = $validated['csv_file'];
             $path = $file->getRealPath();
 
@@ -259,7 +263,7 @@ final class TargetFieldController extends Controller
             // Validate required headers
             $requiredHeaders = ['field', 'label', 'type'];
             $missingHeaders = array_diff($requiredHeaders, $headers);
-            if (!empty($missingHeaders)) {
+            if (! empty($missingHeaders)) {
                 fclose($handle);
                 throw new \RuntimeException(
                     'Missing required columns: '.implode(', ', $missingHeaders)
@@ -296,13 +300,24 @@ final class TargetFieldController extends Controller
 
                     if (empty($field) || empty($label) || empty($type)) {
                         $errors[] = "Row {$rowNumber}: Missing required field (field, label, or type)";
+
                         continue;
                     }
 
                     // Validate type
                     $allowedTypes = ['string', 'integer', 'boolean', 'float', 'date', 'datetime'];
-                    if (!in_array($type, $allowedTypes, true)) {
+                    if (! in_array($type, $allowedTypes, true)) {
                         $errors[] = "Row {$rowNumber}: Invalid type '{$type}'. Allowed types: ".implode(', ', $allowedTypes);
+
+                        continue;
+                    }
+
+                    // Validate role if present
+                    $role = ! empty($rowData['role']) ? trim($rowData['role']) : null;
+                    $allowedRoles = ['serial_number', 'images'];
+                    if ($role !== null && ! in_array($role, $allowedRoles, true)) {
+                        $errors[] = "Row {$rowNumber}: Invalid role '{$role}'. Allowed roles: ".implode(', ', $allowedRoles);
+
                         continue;
                     }
 
@@ -312,9 +327,10 @@ final class TargetFieldController extends Controller
                         'field' => $field,
                         'label' => $label,
                         'type' => $type,
-                        'category' => !empty($rowData['category']) ? trim($rowData['category']) : null,
-                        'description' => !empty($rowData['description']) ? trim($rowData['description']) : null,
-                        'model' => !empty($rowData['model']) ? trim($rowData['model']) : null,
+                        'category' => ! empty($rowData['category']) ? trim($rowData['category']) : null,
+                        'description' => ! empty($rowData['description']) ? trim($rowData['description']) : null,
+                        'model' => ! empty($rowData['model']) ? trim($rowData['model']) : null,
+                        'role' => $role,
                     ];
 
                     // Update or create
@@ -340,7 +356,7 @@ final class TargetFieldController extends Controller
                     $updated
                 );
 
-                if (!empty($errors)) {
+                if (! empty($errors)) {
                     $message .= ' '.count($errors).' error(s) occurred.';
                 }
 

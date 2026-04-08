@@ -8,6 +8,7 @@ use Elaitech\Import\Enums\ImportPipelineFrequency;
 use Elaitech\Import\Services\Jobs\ProcessImportPipelineJob;
 use Elaitech\Import\Services\Pipeline\Contracts\PipelineSchedulingServiceInterface;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 final class ProcessScheduledPipelines extends Command
@@ -84,7 +85,7 @@ final class ProcessScheduledPipelines extends Command
         return self::SUCCESS;
     }
 
-    private function showDryRunResults(\Illuminate\Database\Eloquent\Collection $pipelines): void
+    private function showDryRunResults(Collection $pipelines): void
     {
         $this->info('DRY RUN - Pipelines that would be processed:');
 

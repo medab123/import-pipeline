@@ -40,7 +40,7 @@ class CreateNewUser implements CreatesNewUsers
         return DB::transaction(function () use ($input) {
             $organization = Organization::create([
                 'name' => $input['organization_name'],
-                'slug' => Str::slug($input['organization_name']) . '-' . Str::random(6),
+                'slug' => Str::slug($input['organization_name']).'-'.Str::random(6),
             ]);
 
             $user = User::create([
@@ -56,4 +56,3 @@ class CreateNewUser implements CreatesNewUsers
         });
     }
 }
-

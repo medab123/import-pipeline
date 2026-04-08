@@ -17,7 +17,8 @@ const form = useForm({
   category: '',
   description: '',
   type: 'string', // default
-  model: ''
+  model: '',
+  role: '' as string | null,
 })
 
 const submit = () => {
@@ -55,20 +56,20 @@ const submit = () => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <Label for="field">Field Key (Snake Case)</Label>
-                            <Input 
-                                id="field" 
-                                v-model="form.field" 
-                                placeholder="e.g. product_sku" 
+                            <Input
+                                id="field"
+                                v-model="form.field"
+                                placeholder="e.g. product_sku"
                                 :class="{ 'border-destructive': form.errors.field }"
                             />
                             <p v-if="form.errors.field" class="text-sm text-destructive">{{ form.errors.field }}</p>
                         </div>
                         <div class="space-y-2">
                             <Label for="label">Display Label</Label>
-                            <Input 
-                                id="label" 
-                                v-model="form.label" 
-                                placeholder="e.g. Product SKU" 
+                            <Input
+                                id="label"
+                                v-model="form.label"
+                                placeholder="e.g. Product SKU"
                                 :class="{ 'border-destructive': form.errors.label }"
                             />
                             <p v-if="form.errors.label" class="text-sm text-destructive">{{ form.errors.label }}</p>
@@ -95,31 +96,48 @@ const submit = () => {
                         </div>
                         <div class="space-y-2">
                             <Label for="category">Category (Optional)</Label>
-                            <Input 
-                                id="category" 
-                                v-model="form.category" 
-                                placeholder="e.g. Product, User, Order" 
+                            <Input
+                                id="category"
+                                v-model="form.category"
+                                placeholder="e.g. Product, User, Order"
                             />
                         </div>
                     </div>
 
-                     <div class="space-y-2">
-                        <Label for="model">Related Model (Optional)</Label>
-                        <Input 
-                            id="model" 
-                            v-model="form.model" 
-                            placeholder="e.g. App\Models\Product" 
-                            class="font-mono text-sm"
-                        />
-                         <p class="text-xs text-muted-foreground">The Eloquent model this field belongs to, if applicable.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="model">Related Model (Optional)</Label>
+                            <Input
+                                id="model"
+                                v-model="form.model"
+                                placeholder="e.g. App\Models\Product"
+                                class="font-mono text-sm"
+                            />
+                            <p class="text-xs text-muted-foreground">The Eloquent model this field belongs to, if applicable.</p>
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="role">Field Role (Optional)</Label>
+                            <Select v-model="form.role">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="No role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem :value="null">No role</SelectItem>
+                                    <SelectItem value="serial_number">Serial Number</SelectItem>
+                                    <SelectItem value="images">Images</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p class="text-xs text-muted-foreground">Mark this field as the product identifier (Serial Number) or images field.</p>
+                            <p v-if="form.errors.role" class="text-sm text-destructive">{{ form.errors.role }}</p>
+                        </div>
                     </div>
 
                     <div class="space-y-2">
                         <Label for="description">Description</Label>
-                        <Textarea 
-                            id="description" 
-                            v-model="form.description" 
-                            placeholder="Describe what this field is used for..." 
+                        <Textarea
+                            id="description"
+                            v-model="form.description"
+                            placeholder="Describe what this field is used for..."
                             rows="3"
                         />
                     </div>

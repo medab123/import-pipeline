@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Services\Import\DatabaseResultSaver;
 use Elaitech\Import\Services\Downloader\Implementations\FtpDownloader;
 use Elaitech\Import\Services\Downloader\Implementations\HttpDownloader;
 use Elaitech\Import\Services\Downloader\Implementations\SftpDownloader;
@@ -40,7 +41,7 @@ return [
 
     'save' => [
         // Set the class that implements ResultSaverInterface to handle saving import data
-        'using' => env('IMPORT_PIPELINES_SAVE_USING', \App\Services\Import\DatabaseResultSaver::class),
+        'using' => env('IMPORT_PIPELINES_SAVE_USING', DatabaseResultSaver::class),
     ],
 
     'filters' => [
@@ -61,7 +62,7 @@ return [
             IsNotNullOperator::class,
             StartsWithOperator::class,
             EndsWithOperator::class,
-        ]
+        ],
     ],
 
     'readers' => [
@@ -69,7 +70,6 @@ return [
         'json' => JsonReader::class,
         'xml' => XmlReader::class,
     ],
-
 
     'queues' => [
         'default' => env('IMPORT_PIPELINES_QUEUE', 'import-pipelines'),

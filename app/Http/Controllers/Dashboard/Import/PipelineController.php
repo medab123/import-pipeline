@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\Import;
 
-use Elaitech\Import\Contracts\Services\ImportDashboard\ImportDashboardServiceInterface;
-use Elaitech\Import\Enums\ImportPipelineFrequency;
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\ToastNotificationVariant;
 use App\Http\Controllers\Controller;
 use App\Http\ViewModels\Dashboard\Import\ActivityLogViewModel;
@@ -15,11 +12,15 @@ use App\Http\ViewModels\Dashboard\Import\ListPipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use App\Http\ViewModels\PipelineStatsViewModel;
 use App\Models\ImportPipelineResult;
+use App\Models\PipelineInventory;
+use Elaitech\Import\Contracts\Services\ImportDashboard\ImportDashboardServiceInterface;
+use Elaitech\Import\Enums\ImportPipelineFrequency;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Models\ImportPipelineConfig;
 use Elaitech\Import\Services\Jobs\ProcessImportPipelineJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Inertia\Response;
@@ -247,6 +248,93 @@ final class PipelineController extends Controller
         ]);
     }
 
+    public function products(ImportPipeline $pipeline, Request $request): Response
+    {
+        $perPage = $request->input('per_page', 25);
+        $search = $request->input('search');
+
+        $query = PipelineInventory::where('pipeline_id', $pipeline->id);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('stock_number', 'ilike', '%'.$search.'%')
+                    ->orWhereRaw('product_data::text ilike ?', ['%'.$search.'%']);
+            });
+        }
+
+        $paginated = $query->orderBy('updated_at', 'desc')->paginate($perPage)->withQueryString();
+
+        $products = [];
+        foreach ($paginated->items() as $item) {
+            $products[] = [
+                'uuid' => $item->uuid,
+                'stockNumber' => $item->stock_number,
+                'productData' => $item->product_data,
+                'createdAt' => $item->created_at->toIso8601String(),
+                'updatedAt' => $item->updated_at->toIso8601String(),
+            ];
+        }
+
+        return inertia('Dashboard/Import/Pipelines/Products', [
+            'pipeline' => new PipelineViewModel($pipeline),
+            'products' => $products,
+            'paginator' => [
+                'currentPage' => $paginated->currentPage(),
+                'lastPage' => $paginated->lastPage(),
+                'perPage' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'from' => $paginated->firstItem(),
+                'to' => $paginated->lastItem(),
+            ],
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
+    }
+
+    public function showProduct(ImportPipeline $pipeline, string $inventory): Response|RedirectResponse
+    {
+        $product = PipelineInventory::where('pipeline_id', $pipeline->id)
+            ->where('uuid', $inventory)
+            ->first();
+
+        if (! $product) {
+            $this->toast('Product not found', ToastNotificationVariant::Destructive);
+
+            return redirect()->route('dashboard.import.pipelines.products', ['pipeline' => $pipeline->id]);
+        }
+
+        return inertia('Dashboard/Import/Pipelines/ProductDetail', [
+            'pipeline' => new PipelineViewModel($pipeline),
+            'product' => [
+                'uuid' => $product->uuid,
+                'stockNumber' => $product->stock_number,
+                'productData' => $product->product_data,
+                'createdAt' => $product->created_at->toIso8601String(),
+                'updatedAt' => $product->updated_at->toIso8601String(),
+            ],
+        ]);
+    }
+
+    public function destroyProduct(ImportPipeline $pipeline, string $inventory): RedirectResponse
+    {
+        $product = PipelineInventory::where('pipeline_id', $pipeline->id)
+            ->where('uuid', $inventory)
+            ->first();
+
+        if (! $product) {
+            $this->toast('Product not found', ToastNotificationVariant::Destructive);
+
+            return redirect()->route('dashboard.import.pipelines.products', ['pipeline' => $pipeline->id]);
+        }
+
+        $product->delete();
+
+        $this->toast('Product deleted successfully!');
+
+        return redirect()->route('dashboard.import.pipelines.products', ['pipeline' => $pipeline->id]);
+    }
+
     /**
      * Export the given pipeline as a YAML configuration file.
      */
@@ -285,7 +373,7 @@ final class PipelineController extends Controller
         ]);
 
         try {
-            /** @var \Illuminate\Http\UploadedFile $file */
+            /** @var UploadedFile $file */
             $file = $validated['yaml_file'];
             $yamlContent = $file->get();
 

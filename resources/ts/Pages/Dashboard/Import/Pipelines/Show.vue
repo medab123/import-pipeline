@@ -18,11 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { 
+import {
   ArrowLeft,
-  Edit, 
-  Trash2, 
-  Play, 
+  Edit,
+  Trash2,
+  Play,
   Pause,
   Settings,
   Copy,
@@ -35,7 +35,8 @@ import {
   User,
   Activity,
   History,
-  ChevronDown
+  ChevronDown,
+  Package
 } from 'lucide-vue-next'
 import { PipelineViewModel } from '@/types/generated'
 import { format } from 'date-fns'
@@ -50,15 +51,15 @@ const company = computed(() => props.company || null)
 
 const getStatusBadge = () => {
   if (props.isActive) {
-    return { 
-      variant: 'default' as const, 
+    return {
+      variant: 'default' as const,
       text: 'Active',
       icon: CheckCircle2,
       class: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20'
     }
   }
-  return { 
-    variant: 'secondary' as const, 
+  return {
+    variant: 'secondary' as const,
     text: 'Inactive',
     icon: Circle,
     class: 'bg-muted text-muted-foreground'
@@ -99,10 +100,10 @@ const processNow = () => {
 
 <template>
   <Head :title="`${name || 'Pipeline'} - Import Pipeline`" />
-  
+
   <Default>
     <!-- Page Header -->
-    <PageHeader 
+    <PageHeader
       :title="name"
       :description="description || 'Pipeline details and configuration'"
     >
@@ -121,6 +122,12 @@ const processNow = () => {
         <Button variant="outline" size="sm" @click="processNow" :disabled="!isActive">
           <Activity class="w-4 h-4 mr-2" />
           Process Now
+        </Button>
+        <Button variant="outline" size="sm" as-child>
+          <Link :href="route('dashboard.import.pipelines.products', { pipeline: id })">
+            <Package class="w-4 h-4 mr-2" />
+            Products
+          </Link>
         </Button>
         <Button variant="outline" size="sm" as-child>
           <Link :href="route('dashboard.import.pipelines.executions', { pipeline: id })">
@@ -159,7 +166,7 @@ const processNow = () => {
             <div class="text-sm font-medium text-muted-foreground">Name</div>
             <div class="text-lg font-semibold">{{ name }}</div>
           </div>
-          
+
           <div v-if="description" class="space-y-2">
             <div class="text-sm font-medium text-muted-foreground">Description</div>
             <div class="text-sm">{{ description }}</div>
@@ -167,7 +174,7 @@ const processNow = () => {
 
           <div class="space-y-2">
             <div class="text-sm font-medium text-muted-foreground">Status</div>
-            <Badge 
+            <Badge
               :variant="getStatusBadge().variant"
               :class="getStatusBadge().class"
               class="flex items-center gap-1.5 font-medium w-fit"
@@ -253,7 +260,7 @@ const processNow = () => {
                 <CardTitle>Configuration</CardTitle>
                 <CardDescription>Pipeline configuration details</CardDescription>
               </div>
-              <ChevronDown 
+              <ChevronDown
                 class="h-5 w-5 text-muted-foreground transition-transform duration-200"
                 :class="{ 'rotate-180': configCardOpen }"
               />
@@ -274,8 +281,8 @@ const processNow = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Pipeline</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the pipeline 
-            <span class="font-semibold text-foreground">"{{name }}"</span>? 
+            Are you sure you want to delete the pipeline
+            <span class="font-semibold text-foreground">"{{name }}"</span>?
             This action cannot be undone and will permanently remove the pipeline and all its associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>

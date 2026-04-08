@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard\Import;
 
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Enums\ToastNotificationVariant;
 use App\Factories\ImportPipeline\ImportPipelineStepFactory;
 use App\Http\Controllers\Controller;
 use App\Http\ViewModels\Dashboard\Import\Stepper\Steps\TestDownloaderViewModel;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Core\DTOs\DownloadRequestData;
 use Elaitech\Import\Services\Core\DTOs\DownloadResultData;

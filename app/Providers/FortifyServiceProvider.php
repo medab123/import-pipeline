@@ -10,12 +10,12 @@ use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\LogoutResponse;
-use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 
 final class FortifyServiceProvider extends ServiceProvider
@@ -66,7 +66,7 @@ final class FortifyServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(
-            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            RegisterResponse::class,
             \App\Http\Responses\RegisterResponse::class
         );
 

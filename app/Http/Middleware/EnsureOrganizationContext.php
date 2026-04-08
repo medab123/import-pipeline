@@ -16,7 +16,7 @@ class EnsureOrganizationContext
      * Ensures the authenticated user has a valid, non-deleted organization
      * and binds it into the service container.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
