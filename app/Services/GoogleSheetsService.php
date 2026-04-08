@@ -7,6 +7,7 @@ namespace App\Services;
 use Google\Client;
 use Google\Service\Sheets;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 final class GoogleSheetsService
 {
@@ -75,5 +76,52 @@ final class GoogleSheetsService
             'token' => substr($token, 0, 15).'...',
             'pipeline_id' => $pipelineId,
         ]);
+    }
+
+    /**
+     * Write an error status and message to the sheet for a given row.
+     * Writes to columns F (status) and G (error message).
+     */
+    public function updateRowError(int $rowNumber, string $errorMessage): void
+    {
+        $spreadsheetId = config('scrap.google_sheets.spreadsheet_id');
+        $range = "Sheet1!F{$rowNumber}:G{$rowNumber}";
+
+        $body = new Sheets\ValueRange([
+            'values' => [['error', Str::limit($errorMessage, 500)]],
+        ]);
+
+        $this->sheets->spreadsheets_values->update(
+            $spreadsheetId,
+            $range,
+            $body,
+            ['valueInputOption' => 'RAW']
+        );
+
+        Log::info('Google Sheet row marked as error.', [
+            'row' => $rowNumber,
+            'error' => Str::limit($errorMessage, 100),
+        ]);
+    }
+
+    /**
+     * Write a success status to the sheet for a given row.
+     * Writes to column F (status) and clears column G (error message).
+     */
+    public function updateRowSuccess(int $rowNumber): void
+    {
+        $spreadsheetId = config('scrap.google_sheets.spreadsheet_id');
+        $range = "Sheet1!F{$rowNumber}:G{$rowNumber}";
+
+        $body = new Sheets\ValueRange([
+            'values' => [['success', '']],
+        ]);
+
+        $this->sheets->spreadsheets_values->update(
+            $spreadsheetId,
+            $range,
+            $body,
+            ['valueInputOption' => 'RAW']
+        );
     }
 }
