@@ -59,7 +59,7 @@ final class RolePermissionSeeder extends Seeder
 
         // Admin: everything except manage users, export/import pipelines
         $adminRole->syncPermissions(collect($permissions)->reject(
-            fn (string $p) => in_array($p, ['manage users', 'export pipelines', 'import pipelines'])
+            fn (string $p) => in_array($p, ['manage users'])
         )->values()->all());
 
         // Pipeline Manager: pipelines + dealers, no organization management
