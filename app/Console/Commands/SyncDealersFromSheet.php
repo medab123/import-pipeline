@@ -38,7 +38,6 @@ final class SyncDealersFromSheet extends Command
         FeedKeysService $feedKeysService,
         TargetFieldsService $targetFieldsService,
     ): int {
-        return 0;
         $orgUuid = $this->option('org-uuid') ?: config('scrap.google_sheets.default_org_uuid');
 
         $organization = Organization::where('uuid', $orgUuid)->first();
