@@ -15,8 +15,10 @@ use App\Http\ViewModels\Dashboard\Dealer\ListDealerViewModel;
 use App\Http\ViewModels\Dashboard\Dealer\ShowDealerViewModel;
 use App\Models\Dealer;
 use App\Services\FbmpTokenService;
+use Elaitech\Import\Models\ImportPipeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Response as InertiaResponse;
 
 final class DealerController extends Controller
@@ -107,13 +109,29 @@ final class DealerController extends Controller
         return redirect()->route('dashboard.dealers.show', $dealer);
     }
 
-    public function destroy(Dealer $dealer): RedirectResponse
+    public function destroy(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
     {
         $this->authorize('delete', $dealer);
 
-        $dealer->delete();
+        // Best-effort: revoke the FBMP token on the external API. Failure is
+        // logged inside the service but must not block dealer deletion.
+        if (! empty($dealer->fbmp_app_access_token)) {
+            $fbmpTokenService->delete($dealer->fbmp_app_access_token);
+        }
 
-        $this->toast('Dealer deleted successfully.', ToastNotificationVariant::Destructive);
+        DB::transaction(function () use ($dealer): void {
+            // Delete pipelines targeting this dealer; pipeline_configs,
+            // executions and logs cascade via FK on import_pipelines.id.
+            ImportPipeline::where('target_id', $dealer->id)
+                ->where('organization_uuid', $dealer->organization_uuid)
+                ->get()
+                ->each(fn (ImportPipeline $pipeline) => $pipeline->delete());
+
+            // Scraps and payment_transactions cascade via FK on dealers.id.
+            $dealer->delete();
+        });
+
+        $this->toast('Dealer, pipelines and FBMP token deleted successfully.', ToastNotificationVariant::Destructive);
 
         return back(303);
     }

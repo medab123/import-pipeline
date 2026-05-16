@@ -445,7 +445,7 @@ const getStatusVariant = (status: string) => {
           <AlertDialogTitle>Delete Dealer?</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete <span class="font-semibold">{{ dealer.name }}</span>?
-            This will also delete all related transactions and scrap sources. This action cannot be undone.
+            This will also revoke the FBMP token, delete all import pipelines, scrap sources and transactions. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
