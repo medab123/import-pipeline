@@ -14,6 +14,7 @@ use App\Http\ViewModels\Dashboard\Dealer\EditDealerViewModel;
 use App\Http\ViewModels\Dashboard\Dealer\ListDealerViewModel;
 use App\Http\ViewModels\Dashboard\Dealer\ShowDealerViewModel;
 use App\Models\Dealer;
+use App\Services\FbmpTokenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response as InertiaResponse;
@@ -115,5 +116,84 @@ final class DealerController extends Controller
         $this->toast('Dealer deleted successfully.', ToastNotificationVariant::Destructive);
 
         return back(303);
+    }
+
+    public function generateToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    {
+        $this->authorize('update', $dealer);
+
+        if (! empty($dealer->fbmp_app_access_token)) {
+            $this->toast('Dealer already has an FBMP token. Use Regenerate instead.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $token = $fbmpTokenService->generateAndSave($dealer, $this->buildFbmpUserEmail($dealer));
+
+        if (! $token) {
+            $this->toast('Failed to generate FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $this->toast('FBMP token generated successfully.');
+
+        return back(303);
+    }
+
+    public function regenerateToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    {
+        $this->authorize('update', $dealer);
+
+        if (empty($dealer->fbmp_app_access_token)) {
+            $this->toast('Dealer has no FBMP token to regenerate. Generate one first.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $token = $fbmpTokenService->regenerateAndSave($dealer);
+
+        if (! $token) {
+            $this->toast('Failed to regenerate FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $this->toast('FBMP token regenerated successfully.');
+
+        return back(303);
+    }
+
+    public function revokeToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    {
+        $this->authorize('update', $dealer);
+
+        if (empty($dealer->fbmp_app_access_token)) {
+            $this->toast('Dealer has no FBMP token to revoke.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $revoked = $fbmpTokenService->revokeAndClear($dealer);
+
+        if (! $revoked) {
+            $this->toast('Failed to revoke FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
+
+            return back(303);
+        }
+
+        $this->toast('FBMP token revoked successfully.', ToastNotificationVariant::Destructive);
+
+        return back(303);
+    }
+
+    /**
+     * Build a unique email identifier for the FBMP API based on the dealer name.
+     */
+    private function buildFbmpUserEmail(Dealer $dealer): string
+    {
+        $slug = str($dealer->name)->slug('_')->value();
+
+        return $slug.'@gmail.com';
     }
 }

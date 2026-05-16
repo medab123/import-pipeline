@@ -26,6 +26,9 @@ import {
   GitBranch,
   Copy,
   Check,
+  KeyRound,
+  RefreshCw,
+  ShieldOff,
 } from 'lucide-vue-next'
 
 interface Transaction {
@@ -79,7 +82,10 @@ const props = defineProps<{
 }>()
 
 const deleteDialogOpen = ref(false)
+const regenerateDialogOpen = ref(false)
+const revokeDialogOpen = ref(false)
 const fbmpTokenCopied = ref(false)
+const fbmpTokenProcessing = ref(false)
 
 const fallbackCopy = (text: string): boolean => {
   const textarea = document.createElement('textarea')
@@ -122,6 +128,36 @@ const confirmDelete = () => {
     onSuccess: () => {
       deleteDialogOpen.value = false
     }
+  })
+}
+
+const generateFbmpToken = () => {
+  router.post(route('dashboard.dealers.fbmp-token.generate', props.dealer.id), {}, {
+    preserveScroll: true,
+    onStart: () => { fbmpTokenProcessing.value = true },
+    onFinish: () => { fbmpTokenProcessing.value = false },
+  })
+}
+
+const confirmRegenerateFbmpToken = () => {
+  router.post(route('dashboard.dealers.fbmp-token.regenerate', props.dealer.id), {}, {
+    preserveScroll: true,
+    onStart: () => { fbmpTokenProcessing.value = true },
+    onFinish: () => {
+      fbmpTokenProcessing.value = false
+      regenerateDialogOpen.value = false
+    },
+  })
+}
+
+const confirmRevokeFbmpToken = () => {
+  router.post(route('dashboard.dealers.fbmp-token.revoke', props.dealer.id), {}, {
+    preserveScroll: true,
+    onStart: () => { fbmpTokenProcessing.value = true },
+    onFinish: () => {
+      fbmpTokenProcessing.value = false
+      revokeDialogOpen.value = false
+    },
   })
 }
 
@@ -207,16 +243,31 @@ const getStatusVariant = (status: string) => {
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
+            <div class="space-y-2">
               <h4 class="text-sm font-medium text-muted-foreground">FBMP App Token</h4>
-              <div v-if="dealer.fbmpAppAccessToken" class="flex items-center gap-2">
-                <code class="text-sm bg-muted px-2 py-1 rounded font-mono break-all">{{ dealer.fbmpAppAccessToken }}</code>
-                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="copyFbmpToken">
-                  <Check v-if="fbmpTokenCopied" class="w-3.5 h-3.5 text-green-500" />
-                  <Copy v-else class="w-3.5 h-3.5" />
+              <div v-if="dealer.fbmpAppAccessToken" class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <code class="text-sm bg-muted px-2 py-1 rounded font-mono break-all">{{ dealer.fbmpAppAccessToken }}</code>
+                  <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="copyFbmpToken">
+                    <Check v-if="fbmpTokenCopied" class="w-3.5 h-3.5 text-green-500" />
+                    <Copy v-else class="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" :disabled="fbmpTokenProcessing" @click="regenerateDialogOpen = true">
+                    <RefreshCw class="w-3.5 h-3.5 mr-2" /> Regenerate
+                  </Button>
+                  <Button variant="destructive" size="sm" :disabled="fbmpTokenProcessing" @click="revokeDialogOpen = true">
+                    <ShieldOff class="w-3.5 h-3.5 mr-2" /> Revoke
+                  </Button>
+                </div>
+              </div>
+              <div v-else class="space-y-2">
+                <div class="text-muted-foreground text-sm italic">Not generated yet</div>
+                <Button variant="outline" size="sm" :disabled="fbmpTokenProcessing" @click="generateFbmpToken">
+                  <KeyRound class="w-3.5 h-3.5 mr-2" /> Generate Token
                 </Button>
               </div>
-              <div v-else class="text-muted-foreground text-sm italic">Not generated yet</div>
             </div>
             <div class="space-y-1">
               <h4 class="text-sm font-medium text-muted-foreground">FBMP App URL</h4>
@@ -401,6 +452,40 @@ const getStatusVariant = (status: string) => {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction @click="confirmDelete" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             Delete Dealer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog v-model:open="regenerateDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Regenerate FBMP Token?</AlertDialogTitle>
+          <AlertDialogDescription>
+            The current token will be replaced with a new one. The dealer's FBMP app will need to be updated with the new token.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel :disabled="fbmpTokenProcessing">Cancel</AlertDialogCancel>
+          <AlertDialogAction @click="confirmRegenerateFbmpToken" :disabled="fbmpTokenProcessing">
+            Regenerate
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog v-model:open="revokeDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Revoke FBMP Token?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently revoke the token. The dealer's FBMP app will immediately lose access. You can generate a new token afterwards.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel :disabled="fbmpTokenProcessing">Cancel</AlertDialogCancel>
+          <AlertDialogAction @click="confirmRevokeFbmpToken" :disabled="fbmpTokenProcessing" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Revoke Token
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
