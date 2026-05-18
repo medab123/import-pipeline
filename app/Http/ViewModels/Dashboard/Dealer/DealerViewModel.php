@@ -43,11 +43,6 @@ final class DealerViewModel extends ViewModel
         return $this->dealer->website_urls ?? [];
     }
 
-    public function fbmpAppAccessToken(): ?string
-    {
-        return $this->dealer->fbmp_app_access_token;
-    }
-
     public function fbmpAppUrl(): ?string
     {
         return $this->dealer->fbmp_app_url;
@@ -95,7 +90,7 @@ final class DealerViewModel extends ViewModel
 
     public function hasFbmpToken(): bool
     {
-        return ! empty($this->dealer->fbmp_app_access_token);
+        return $this->dealer->fbmpTokens()->exists();
     }
 
     public function hasScrapSource(): bool

@@ -14,11 +14,13 @@ use App\Http\ViewModels\Dashboard\Dealer\EditDealerViewModel;
 use App\Http\ViewModels\Dashboard\Dealer\ListDealerViewModel;
 use App\Http\ViewModels\Dashboard\Dealer\ShowDealerViewModel;
 use App\Models\Dealer;
+use App\Models\DealerFbmpToken;
 use App\Services\FbmpTokenService;
 use Elaitech\Import\Models\ImportPipeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Response as InertiaResponse;
 
 final class DealerController extends Controller
@@ -113,10 +115,10 @@ final class DealerController extends Controller
     {
         $this->authorize('delete', $dealer);
 
-        // Best-effort: revoke the FBMP token on the external API. Failure is
-        // logged inside the service but must not block dealer deletion.
-        if (! empty($dealer->fbmp_app_access_token)) {
-            $fbmpTokenService->delete($dealer->fbmp_app_access_token);
+        // Best-effort: revoke every FBMP token on the external API. Failures
+        // are logged inside the service but must not block dealer deletion.
+        foreach ($dealer->fbmpTokens as $token) {
+            $fbmpTokenService->delete($token->token);
         }
 
         DB::transaction(function () use ($dealer): void {
@@ -127,28 +129,33 @@ final class DealerController extends Controller
                 ->get()
                 ->each(fn (ImportPipeline $pipeline) => $pipeline->delete());
 
-            // Scraps and payment_transactions cascade via FK on dealers.id.
+            // Scraps, payment_transactions and dealer_fbmp_tokens cascade
+            // via FK on dealers.id.
             $dealer->delete();
         });
 
-        $this->toast('Dealer, pipelines and FBMP token deleted successfully.', ToastNotificationVariant::Destructive);
+        $this->toast('Dealer, pipelines and FBMP tokens deleted successfully.', ToastNotificationVariant::Destructive);
 
         return back(303);
     }
 
-    public function generateToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    /**
+     * Generate a new FBMP token for the dealer. Requires "manage fbmp token".
+     */
+    public function storeFbmpToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
     {
         $this->authorize('update', $dealer);
 
-        if (! empty($dealer->fbmp_app_access_token)) {
-            $this->toast('Dealer already has an FBMP token. Use Regenerate instead.', ToastNotificationVariant::Destructive);
+        if (! auth()->user()->can('manage fbmp token')) {
+            $this->toast('You do not have permission to create FBMP tokens.', ToastNotificationVariant::Destructive);
 
             return back(303);
         }
 
-        $token = $fbmpTokenService->generateAndSave($dealer, $this->buildFbmpUserEmail($dealer));
+        $userEmail = $this->buildFbmpUserEmail($dealer, $dealer->fbmpTokens()->count());
+        $row = $fbmpTokenService->generateForDealer($dealer, $userEmail);
 
-        if (! $token) {
+        if (! $row) {
             $this->toast('Failed to generate FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
 
             return back(303);
@@ -159,19 +166,15 @@ final class DealerController extends Controller
         return back(303);
     }
 
-    public function regenerateToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    /**
+     * Regenerate a specific token. Allowed for anyone who can update the dealer.
+     */
+    public function regenerateFbmpToken(Dealer $dealer, DealerFbmpToken $token, FbmpTokenService $fbmpTokenService): RedirectResponse
     {
         $this->authorize('update', $dealer);
+        $this->ensureTokenBelongsToDealer($token, $dealer);
 
-        if (empty($dealer->fbmp_app_access_token)) {
-            $this->toast('Dealer has no FBMP token to regenerate. Generate one first.', ToastNotificationVariant::Destructive);
-
-            return back(303);
-        }
-
-        $token = $fbmpTokenService->regenerateAndSave($dealer);
-
-        if (! $token) {
+        if (! $fbmpTokenService->regenerateToken($token)) {
             $this->toast('Failed to regenerate FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
 
             return back(303);
@@ -182,19 +185,21 @@ final class DealerController extends Controller
         return back(303);
     }
 
-    public function revokeToken(Dealer $dealer, FbmpTokenService $fbmpTokenService): RedirectResponse
+    /**
+     * Revoke a specific token. Requires "manage fbmp token".
+     */
+    public function revokeFbmpToken(Dealer $dealer, DealerFbmpToken $token, FbmpTokenService $fbmpTokenService): RedirectResponse
     {
         $this->authorize('update', $dealer);
+        $this->ensureTokenBelongsToDealer($token, $dealer);
 
-        if (empty($dealer->fbmp_app_access_token)) {
-            $this->toast('Dealer has no FBMP token to revoke.', ToastNotificationVariant::Destructive);
+        if (! auth()->user()->can('manage fbmp token')) {
+            $this->toast('You do not have permission to revoke FBMP tokens.', ToastNotificationVariant::Destructive);
 
             return back(303);
         }
 
-        $revoked = $fbmpTokenService->revokeAndClear($dealer);
-
-        if (! $revoked) {
+        if (! $fbmpTokenService->revokeToken($token)) {
             $this->toast('Failed to revoke FBMP token. Check the logs for details.', ToastNotificationVariant::Destructive);
 
             return back(303);
@@ -205,13 +210,24 @@ final class DealerController extends Controller
         return back(303);
     }
 
+    private function ensureTokenBelongsToDealer(DealerFbmpToken $token, Dealer $dealer): void
+    {
+        abort_if($token->dealer_id !== $dealer->id, 404);
+    }
+
     /**
-     * Build a unique email identifier for the FBMP API based on the dealer name.
+     * Build a unique email identifier for the FBMP API. The first token uses
+     * the slug as-is for backwards compatibility; additional tokens append a
+     * short random suffix so the API receives a distinct user per token.
      */
-    private function buildFbmpUserEmail(Dealer $dealer): string
+    private function buildFbmpUserEmail(Dealer $dealer, int $existingCount = 0): string
     {
         $slug = str($dealer->name)->slug('_')->value();
 
-        return $slug.'@gmail.com';
+        if ($existingCount === 0) {
+            return $slug.'@gmail.com';
+        }
+
+        return $slug.'_'.strtolower(Str::random(6)).'@gmail.com';
     }
 }

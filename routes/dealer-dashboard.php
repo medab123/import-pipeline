@@ -11,12 +11,12 @@ Route::middleware(['auth', 'organization', 'permission:view dealers'])
     ->prefix('dashboard')
     ->name('dashboard.')
     ->group(function () {
-        Route::post('dealers/{dealer}/fbmp-token/generate', [DealerController::class, 'generateToken'])
-            ->name('dealers.fbmp-token.generate');
-        Route::post('dealers/{dealer}/fbmp-token/regenerate', [DealerController::class, 'regenerateToken'])
-            ->name('dealers.fbmp-token.regenerate');
-        Route::post('dealers/{dealer}/fbmp-token/revoke', [DealerController::class, 'revokeToken'])
-            ->name('dealers.fbmp-token.revoke');
+        Route::post('dealers/{dealer}/fbmp-tokens', [DealerController::class, 'storeFbmpToken'])
+            ->name('dealers.fbmp-tokens.store');
+        Route::post('dealers/{dealer}/fbmp-tokens/{token}/regenerate', [DealerController::class, 'regenerateFbmpToken'])
+            ->name('dealers.fbmp-tokens.regenerate');
+        Route::delete('dealers/{dealer}/fbmp-tokens/{token}', [DealerController::class, 'revokeFbmpToken'])
+            ->name('dealers.fbmp-tokens.destroy');
 
         Route::resource('dealers', DealerController::class);
         Route::resource('payment-transactions', PaymentTransactionController::class);

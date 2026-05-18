@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Dealer;
+use App\Models\DealerFbmpToken;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,94 +26,79 @@ final class FbmpTokenService
     }
 
     /**
-     * Generate an FBMP app token for a dealer via the external API
-     * and persist it on the dealer record.
+     * Generate a new FBMP token for a dealer via the external API and persist
+     * it as a new DealerFbmpToken row.
      *
-     * @param  string  $userEmail  Unique identifier for the dealer account (email format).
-     * @param  int|null  $limitAccount  Account limit override.
-     * @return string|null The generated token, or null on failure.
+     * @return DealerFbmpToken|null The persisted token, or null on failure.
      */
-    public function generateAndSave(Dealer $dealer, string $userEmail, ?int $limitAccount = null): ?string
+    public function generateForDealer(Dealer $dealer, string $userEmail, ?int $limitAccount = null): ?DealerFbmpToken
     {
-        $token = $this->generate($userEmail, $limitAccount);
+        $limit = $limitAccount ?? $this->defaultLimitAccount;
+
+        $token = $this->generate($userEmail, $limit);
 
         if (! $token) {
             return null;
         }
 
-        $dealer->updateQuietly([
-            'fbmp_app_access_token' => $token,
+        $row = $dealer->fbmpTokens()->create([
+            'organization_uuid' => $dealer->organization_uuid,
+            'token' => $token,
+            'user_email' => $userEmail,
+            'limit_account' => $limit,
         ]);
 
         $dealer->resolveStatus();
 
         Log::info('FBMP token generated and saved for dealer.', [
             'dealer_id' => $dealer->id,
+            'token_id' => $row->id,
             'user_email' => $userEmail,
         ]);
 
-        return $token;
+        return $row;
     }
 
     /**
-     * Regenerate the dealer's FBMP token via the external API and persist
-     * the new value on the dealer record.
-     *
-     * @return string|null The new token, or null on failure.
+     * Regenerate the given token via the external API and update the row in place.
      */
-    public function regenerateAndSave(Dealer $dealer): ?string
+    public function regenerateToken(DealerFbmpToken $token): bool
     {
-        if (empty($dealer->fbmp_app_access_token)) {
-            Log::warning('Cannot regenerate FBMP token: dealer has no existing token.', [
-                'dealer_id' => $dealer->id,
-            ]);
-
-            return null;
-        }
-
-        $newToken = $this->regenerate($dealer->fbmp_app_access_token);
+        $newToken = $this->regenerate($token->token);
 
         if (! $newToken) {
-            return null;
+            return false;
         }
 
-        $dealer->updateQuietly([
-            'fbmp_app_access_token' => $newToken,
+        $token->update(['token' => $newToken]);
+        $token->dealer?->resolveStatus();
+
+        Log::info('FBMP token regenerated.', [
+            'dealer_id' => $token->dealer_id,
+            'token_id' => $token->id,
         ]);
 
-        $dealer->resolveStatus();
-
-        Log::info('FBMP token regenerated and saved for dealer.', [
-            'dealer_id' => $dealer->id,
-        ]);
-
-        return $newToken;
+        return true;
     }
 
     /**
-     * Revoke the dealer's FBMP token via the external API and clear it
-     * from the dealer record.
+     * Revoke the given token via the external API and delete the row.
      */
-    public function revokeAndClear(Dealer $dealer): bool
+    public function revokeToken(DealerFbmpToken $token): bool
     {
-        if (empty($dealer->fbmp_app_access_token)) {
-            return true;
-        }
-
-        $revoked = $this->delete($dealer->fbmp_app_access_token);
+        $revoked = $this->delete($token->token);
 
         if (! $revoked) {
             return false;
         }
 
-        $dealer->updateQuietly([
-            'fbmp_app_access_token' => null,
-        ]);
+        $dealer = $token->dealer;
+        $token->delete();
+        $dealer?->resolveStatus();
 
-        $dealer->resolveStatus();
-
-        Log::info('FBMP token revoked and cleared for dealer.', [
-            'dealer_id' => $dealer->id,
+        Log::info('FBMP token revoked and deleted.', [
+            'dealer_id' => $token->dealer_id,
+            'token_id' => $token->id,
         ]);
 
         return true;
@@ -120,10 +106,6 @@ final class FbmpTokenService
 
     /**
      * Call the external API to generate a new FBMP token.
-     *
-     * @param  string  $userEmail  Unique identifier for the dealer account.
-     * @param  int|null  $limitAccount  Account limit override.
-     * @return string|null The generated token, or null on failure.
      */
     public function generate(string $userEmail, ?int $limitAccount = null): ?string
     {
@@ -175,8 +157,6 @@ final class FbmpTokenService
 
     /**
      * Call the external API to regenerate an existing FBMP token.
-     *
-     * @return string|null The new token, or null on failure.
      */
     public function regenerate(string $oldToken): ?string
     {

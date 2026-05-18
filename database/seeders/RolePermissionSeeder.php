@@ -40,7 +40,11 @@ final class RolePermissionSeeder extends Seeder
             'view dealers',
             'manage scraps',
             'view scraps',
+            'manage fbmp token',
         ];
+
+        // Drop the legacy permission name in case it was previously seeded.
+        Permission::query()->where('name', 'manage multi token')->delete();
 
         foreach ($permissions as $permission) {
             Permission::query()->firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
@@ -57,9 +61,10 @@ final class RolePermissionSeeder extends Seeder
         $superAdminRole->syncPermissions($permissions);
         $devRole->syncPermissions($permissions);
 
-        // Admin: everything except manage users, export/import pipelines
+        // Admin: everything except manage users and FBMP token management
+        // (FBMP token create/revoke is Dev-only; everyone else can still view/regenerate).
         $adminRole->syncPermissions(collect($permissions)->reject(
-            fn (string $p) => in_array($p, ['manage users'])
+            fn (string $p) => in_array($p, ['manage users', 'manage fbmp token'])
         )->values()->all());
 
         // Pipeline Manager: pipelines + dealers, no organization management

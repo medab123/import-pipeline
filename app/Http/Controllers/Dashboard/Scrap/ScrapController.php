@@ -74,9 +74,9 @@ final class ScrapController extends Controller
         // Generate an FBMP app token for the dealer if they don't already have one.
         $dealer = Dealer::find($scrap->dealer_id);
 
-        if ($dealer && empty($dealer->fbmp_app_access_token)) {
+        if ($dealer && ! $dealer->fbmpTokens()->exists()) {
             $userEmail = $this->buildFbmpUserEmail($dealer);
-            $fbmpTokenService->generateAndSave($dealer, $userEmail);
+            $fbmpTokenService->generateForDealer($dealer, $userEmail);
         }
 
         $this->toast('Scrap source created successfully. Import pipeline is being configured in the background.');

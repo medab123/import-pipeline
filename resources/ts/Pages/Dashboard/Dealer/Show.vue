@@ -67,11 +67,19 @@ interface DealerData {
   notes: string | null
   postingAddress: string | null
   websiteUrls: string[]
-  fbmpAppAccessToken: string | null
   fbmpAppUrl: string | null
   paymentPeriod: string
   formattedCreatedAt: string
   formattedUpdatedAt: string
+}
+
+interface FbmpToken {
+  id: number
+  token: string
+  user_email: string | null
+  limit_account: number
+  created_at: string
+  formatted_created_at: string
 }
 
 const props = defineProps<{
@@ -79,12 +87,15 @@ const props = defineProps<{
   recentTransactions: Transaction[]
   scraps: ScrapItem[]
   importPipelines: ImportPipelineItem[]
+  fbmpTokens: FbmpToken[]
+  canManageFbmpToken: boolean
 }>()
 
 const deleteDialogOpen = ref(false)
 const regenerateDialogOpen = ref(false)
 const revokeDialogOpen = ref(false)
-const fbmpTokenCopied = ref(false)
+const selectedTokenId = ref<number | null>(null)
+const copiedTokenId = ref<number | null>(null)
 const fbmpTokenProcessing = ref(false)
 
 const fallbackCopy = (text: string): boolean => {
@@ -104,22 +115,23 @@ const fallbackCopy = (text: string): boolean => {
   return success
 }
 
-const copyFbmpToken = async () => {
-  if (!props.dealer.fbmpAppAccessToken) return
+const copyFbmpToken = async (token: FbmpToken) => {
   let success = false
   if (navigator.clipboard && window.isSecureContext) {
     try {
-      await navigator.clipboard.writeText(props.dealer.fbmpAppAccessToken)
+      await navigator.clipboard.writeText(token.token)
       success = true
     } catch {
-      success = fallbackCopy(props.dealer.fbmpAppAccessToken)
+      success = fallbackCopy(token.token)
     }
   } else {
-    success = fallbackCopy(props.dealer.fbmpAppAccessToken)
+    success = fallbackCopy(token.token)
   }
   if (success) {
-    fbmpTokenCopied.value = true
-    setTimeout(() => { fbmpTokenCopied.value = false }, 2000)
+    copiedTokenId.value = token.id
+    setTimeout(() => {
+      if (copiedTokenId.value === token.id) copiedTokenId.value = null
+    }, 2000)
   }
 }
 
@@ -132,31 +144,45 @@ const confirmDelete = () => {
 }
 
 const generateFbmpToken = () => {
-  router.post(route('dashboard.dealers.fbmp-token.generate', props.dealer.id), {}, {
+  router.post(route('dashboard.dealers.fbmp-tokens.store', props.dealer.id), {}, {
     preserveScroll: true,
     onStart: () => { fbmpTokenProcessing.value = true },
     onFinish: () => { fbmpTokenProcessing.value = false },
   })
 }
 
+const openRegenerateDialog = (tokenId: number) => {
+  selectedTokenId.value = tokenId
+  regenerateDialogOpen.value = true
+}
+
+const openRevokeDialog = (tokenId: number) => {
+  selectedTokenId.value = tokenId
+  revokeDialogOpen.value = true
+}
+
 const confirmRegenerateFbmpToken = () => {
-  router.post(route('dashboard.dealers.fbmp-token.regenerate', props.dealer.id), {}, {
+  if (selectedTokenId.value === null) return
+  router.post(route('dashboard.dealers.fbmp-tokens.regenerate', [props.dealer.id, selectedTokenId.value]), {}, {
     preserveScroll: true,
     onStart: () => { fbmpTokenProcessing.value = true },
     onFinish: () => {
       fbmpTokenProcessing.value = false
       regenerateDialogOpen.value = false
+      selectedTokenId.value = null
     },
   })
 }
 
 const confirmRevokeFbmpToken = () => {
-  router.post(route('dashboard.dealers.fbmp-token.revoke', props.dealer.id), {}, {
+  if (selectedTokenId.value === null) return
+  router.delete(route('dashboard.dealers.fbmp-tokens.destroy', [props.dealer.id, selectedTokenId.value]), {
     preserveScroll: true,
     onStart: () => { fbmpTokenProcessing.value = true },
     onFinish: () => {
       fbmpTokenProcessing.value = false
       revokeDialogOpen.value = false
+      selectedTokenId.value = null
     },
   })
 }
@@ -243,33 +269,69 @@ const getStatusVariant = (status: string) => {
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <h4 class="text-sm font-medium text-muted-foreground">FBMP App Token</h4>
-              <div v-if="dealer.fbmpAppAccessToken" class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <code class="text-sm bg-muted px-2 py-1 rounded font-mono break-all">{{ dealer.fbmpAppAccessToken }}</code>
-                  <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="copyFbmpToken">
-                    <Check v-if="fbmpTokenCopied" class="w-3.5 h-3.5 text-green-500" />
-                    <Copy v-else class="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" :disabled="fbmpTokenProcessing" @click="regenerateDialogOpen = true">
-                    <RefreshCw class="w-3.5 h-3.5 mr-2" /> Regenerate
-                  </Button>
-                  <Button variant="destructive" size="sm" :disabled="fbmpTokenProcessing" @click="revokeDialogOpen = true">
-                    <ShieldOff class="w-3.5 h-3.5 mr-2" /> Revoke
-                  </Button>
-                </div>
-              </div>
-              <div v-else class="space-y-2">
-                <div class="text-muted-foreground text-sm italic">Not generated yet</div>
-                <Button variant="outline" size="sm" :disabled="fbmpTokenProcessing" @click="generateFbmpToken">
-                  <KeyRound class="w-3.5 h-3.5 mr-2" /> Generate Token
+            <div class="space-y-2 col-span-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-sm font-medium text-muted-foreground">FBMP App Tokens</h4>
+                <Button
+                  v-if="canManageFbmpToken"
+                  variant="outline"
+                  size="sm"
+                  :disabled="fbmpTokenProcessing"
+                  @click="generateFbmpToken"
+                >
+                  <KeyRound class="w-3.5 h-3.5 mr-2" />
+                  {{ fbmpTokens.length === 0 ? 'Generate Token' : 'Generate New Token' }}
                 </Button>
               </div>
+
+              <div v-if="fbmpTokens.length === 0" class="text-muted-foreground text-sm italic">
+                No tokens generated yet.
+              </div>
+
+              <div v-else class="space-y-3">
+                <div
+                  v-for="(token, index) in fbmpTokens"
+                  :key="token.id"
+                  class="rounded-lg border bg-background p-3 space-y-2"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <Badge variant="outline" class="shrink-0">#{{ index + 1 }}</Badge>
+                      <span v-if="token.user_email" class="text-xs text-muted-foreground font-mono">{{ token.user_email }}</span>
+                    </div>
+                    <span class="text-xs text-muted-foreground">{{ token.formatted_created_at }}</span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <code class="text-sm bg-muted px-2 py-1 rounded font-mono break-all flex-1">{{ token.token }}</code>
+                    <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="copyFbmpToken(token)">
+                      <Check v-if="copiedTokenId === token.id" class="w-3.5 h-3.5 text-green-500" />
+                      <Copy v-else class="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" :disabled="fbmpTokenProcessing" @click="openRegenerateDialog(token.id)">
+                      <RefreshCw class="w-3.5 h-3.5 mr-2" /> Regenerate
+                    </Button>
+                    <Button
+                      v-if="canManageFbmpToken"
+                      variant="destructive"
+                      size="sm"
+                      :disabled="fbmpTokenProcessing"
+                      @click="openRevokeDialog(token.id)"
+                    >
+                      <ShieldOff class="w-3.5 h-3.5 mr-2" /> Revoke
+                    </Button>
+                  </div>
+                </div>
+
+                <p v-if="!canManageFbmpToken" class="text-xs text-muted-foreground italic">
+                  You can view and regenerate tokens. Creating new tokens or revoking existing ones requires the "manage fbmp token" permission.
+                </p>
+              </div>
             </div>
-            <div class="space-y-1">
+            <div class="space-y-1 col-span-2">
               <h4 class="text-sm font-medium text-muted-foreground">FBMP App URL</h4>
               <a v-if="dealer.fbmpAppUrl" :href="dealer.fbmpAppUrl" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
                 {{ dealer.fbmpAppUrl }}

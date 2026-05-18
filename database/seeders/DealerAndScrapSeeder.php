@@ -39,6 +39,7 @@ class DealerAndScrapSeeder extends Seeder
 
         try {
             // Remove previous data
+            DB::table('dealer_fbmp_tokens')->delete();
             DB::table('scraps')->delete();
             DB::table('dealers')->delete();
 
@@ -66,7 +67,6 @@ class DealerAndScrapSeeder extends Seeder
                 // Use specific organization UUID instead of creating
                 $orgUuid = '07301d3f-9b46-43ed-8861-044209d06b54';
 
-
                 // Determine Status (Index 3) - Enum mapping
                 $rawStatus = strtolower(trim($data[3] ?? ''));
                 $status = 'active'; // Default
@@ -83,14 +83,27 @@ class DealerAndScrapSeeder extends Seeder
                     'notes' => trim($data[4] ?? '') ?: null,
                     'posting_address' => trim($data[5] ?? '') ?: null,
                     'website_url' => trim($data[6] ?? '') ?: null,
-                    // Store 'fbmp Access Token' (from column 10) into fbmp_app_access_token
-                    'fbmp_app_access_token' => trim($data[10] ?? '') ?: null,
                     // Store 'app' (from column 11) into fbmp_app_url
                     'fbmp_app_url' => trim($data[11] ?? '') ?: null,
                     'payment_period' => 'month',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
+
+                // Seed the legacy single FBMP token (from CSV column 10) into the
+                // new dealer_fbmp_tokens table.
+                $legacyToken = trim($data[10] ?? '');
+                if ($legacyToken !== '') {
+                    DB::table('dealer_fbmp_tokens')->insert([
+                        'dealer_id' => $dealerId,
+                        'organization_uuid' => $orgUuid,
+                        'token' => $legacyToken,
+                        'user_email' => null,
+                        'limit_account' => 999,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
 
                 // Create Scrap record mapping
                 DB::table('scraps')->insert([

@@ -196,7 +196,7 @@ final class SyncDealersFromSheet extends Command
 
             // 5. Generate FBMP token
             $userEmail = Str::slug($dealerName, '_').'@gmail.com';
-            $fbmpTokenService->generateAndSave($dealer, $userEmail);
+            $fbmpTokenService->generateForDealer($dealer, $userEmail);
             $this->info('    FBMP token generated.');
 
             // 6. Dispatch pipeline processing (queued — this is safe because

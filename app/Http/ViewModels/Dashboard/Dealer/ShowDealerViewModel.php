@@ -70,4 +70,25 @@ final class ShowDealerViewModel extends ViewModel
             ])
             ->toArray();
     }
+
+    public function fbmpTokens(): array
+    {
+        return $this->dealer->fbmpTokens()
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($token) => [
+                'id' => $token->id,
+                'token' => $token->token,
+                'user_email' => $token->user_email,
+                'limit_account' => $token->limit_account,
+                'created_at' => $token->created_at->toISOString(),
+                'formatted_created_at' => $token->created_at->format('M d, Y H:i'),
+            ])
+            ->toArray();
+    }
+
+    public function canManageFbmpToken(): bool
+    {
+        return auth()->user()?->can('manage fbmp token') ?? false;
+    }
 }
