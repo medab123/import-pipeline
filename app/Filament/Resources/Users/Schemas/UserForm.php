@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use App\Models\Organization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -58,7 +57,6 @@ class UserForm
                             ->label('Role')
                             ->options(function () {
                                 return Role::where('guard_name', 'web')
-                                    ->whereNotIn('name', ['Super Admin', 'Dev'])
                                     ->pluck('name', 'name')
                                     ->toArray();
                             })
