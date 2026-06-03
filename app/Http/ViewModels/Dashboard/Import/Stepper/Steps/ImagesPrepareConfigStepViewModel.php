@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\ViewModels\Dashboard\Import\Stepper\Steps;
 
-use Elaitech\Import\Enums\ImportPipelineStep;
 use App\Http\ViewModels\Dashboard\Import\PipelineViewModel;
 use App\Http\ViewModels\Dashboard\Import\Stepper\CreateStepViewModel;
+use Elaitech\Import\Enums\ImportPipelineStep;
 use Elaitech\Import\Models\ImportPipeline;
 use Elaitech\Import\Services\Pipeline\Services\TargetFieldsService;
 use Illuminate\Support\Collection;
@@ -49,17 +49,17 @@ final class ImagesPrepareConfigStepViewModel extends ViewModel
 
     public function imageSeparator(): string
     {
-        return $this->imagesPrepareConfig->get('image_separator', ',');
+        return $this->imagesPrepareConfig->get('image_separator', ',') ?? ',';
     }
 
     public function active(): bool
     {
-        return $this->imagesPrepareConfig->get('active', false);
+        return $this->imagesPrepareConfig->get('active', false) ?? false;
     }
 
     public function downloadMode(): string
     {
-        return $this->imagesPrepareConfig->get('download_mode', 'all');
+        return $this->imagesPrepareConfig->get('download_mode', 'all') ?? 'all';
     }
 
     public function imagesKey(): string
