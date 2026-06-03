@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Services\Import\DatabaseResultSaver;
+use App\Services\Import\Readers\Utf8CsvReader;
 use Elaitech\Import\Services\Downloader\Implementations\FtpDownloader;
 use Elaitech\Import\Services\Downloader\Implementations\HttpDownloader;
 use Elaitech\Import\Services\Downloader\Implementations\SftpDownloader;
@@ -21,7 +23,6 @@ use Elaitech\Import\Services\Filter\Implementations\NotInOperator;
 use Elaitech\Import\Services\Filter\Implementations\NotRegexOperator;
 use Elaitech\Import\Services\Filter\Implementations\RegexOperator;
 use Elaitech\Import\Services\Filter\Implementations\StartsWithOperator;
-use Elaitech\Import\Services\Reader\Implementations\CsvReader;
 use Elaitech\Import\Services\Reader\Implementations\JsonReader;
 use Elaitech\Import\Services\Reader\Implementations\XmlReader;
 
@@ -40,7 +41,7 @@ return [
 
     'save' => [
         // Set the class that implements ResultSaverInterface to handle saving import data
-        'using' => env('IMPORT_PIPELINES_SAVE_USING', \App\Services\Import\DatabaseResultSaver::class),
+        'using' => env('IMPORT_PIPELINES_SAVE_USING', DatabaseResultSaver::class),
     ],
 
     'filters' => [
@@ -61,15 +62,16 @@ return [
             IsNotNullOperator::class,
             StartsWithOperator::class,
             EndsWithOperator::class,
-        ]
+        ],
     ],
 
     'readers' => [
-        'csv' => CsvReader::class,
+        // App-owned reader normalises Windows-1252/Latin-1 dealer feeds to UTF-8
+        // before parsing; prevents "Malformed UTF-8" JSON-encoding failures downstream.
+        'csv' => Utf8CsvReader::class,
         'json' => JsonReader::class,
         'xml' => XmlReader::class,
     ],
-
 
     'queues' => [
         'default' => env('IMPORT_PIPELINES_QUEUE', 'import-pipelines'),
